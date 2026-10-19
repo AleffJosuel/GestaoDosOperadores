@@ -1,0 +1,5 @@
+matricula;nome;cargo;setor;dataAdmissao;escolaridade
+00101;Maria Silva;Operadora;Produção;2023-05-10;Ensino Médio
+00102;João Pereira;Operador;Produção;10/03/2022;Ensino Técnico
+00103;Ana Souza;Líder de Turno;Logística;2021-11-01;Ensino Superior
+00104;Carlos Lima;Operador;Qualidade;;Ensino Médio

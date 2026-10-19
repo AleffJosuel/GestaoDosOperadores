@@ -1,0 +1,16 @@
+{
+  // Requer a "Extension Pack for Java". O JDK do projeto precisa ser o 21
+  // (configure em java.configuration.runtimes ou no seletor de JDK do projeto).
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "GestaoCompetenciasApplication",
+      "request": "launch",
+      "mainClass": "br.com.gestao.operadores.GestaoCompetenciasApplication",
+      "projectName": "operadores",
+      // Credenciais do primeiro supervisor e dados de banco ficam no .env (fora do git).
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

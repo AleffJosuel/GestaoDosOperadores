@@ -1,0 +1,10 @@
+# Normaliza quebras de linha: o git guarda LF no repositório e ajusta ao checkout.
+* text=auto eol=lf
+
+# Arquivos tipicamente binários (não normalizar).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

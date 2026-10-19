@@ -1,0 +1,46 @@
+/*
+ * Paleta do cliente — extraída da logo oficial:
+ * vermelho #cf242a + preto + branco. Este é o único arquivo de cores: ajuste aqui se precisar.
+ * Contraste conferido para texto escuro sobre os fundos claros (alvo WCAG AA).
+ */
+:root {
+  /* Marca */
+  --cor-primaria: #cf242a;        /* vermelho da logo */
+  --cor-primaria-escura: #a81d22; /* hover/ativo */
+  --cor-primaria-suave: #fbe3e4;  /* fundo de destaque */
+  --cor-acento: #1a1a1a;          /* preto da logo, para ênfase secundária */
+
+  /* Neutros (identidade preto/branco) */
+  --cor-fundo: #f6f6f7;
+  --cor-superficie: #ffffff;
+  --cor-superficie-2: #f0f0f2;
+  --cor-borda: #e2e2e6;
+  --cor-texto: #1a1a1a;
+  --cor-texto-suave: #5f5f66;
+  --cor-texto-inverso: #ffffff;
+
+  /* Faixas de classificação (também sinalizadas por número/rótulo, não só cor) */
+  --cor-critico: #cf242a;
+  --cor-critico-suave: #fbe0e1;
+  --cor-desenvolver: #d9770e;
+  --cor-desenvolver-suave: #fbe8d2;
+  --cor-adequado: #b7950b;
+  --cor-adequado-suave: #f6edc7;
+  --cor-bom: #2e7d4f;
+  --cor-bom-suave: #d6ead6;
+  --cor-neutra-suave: #ececee; /* sem nota */
+
+  /* Estado */
+  --cor-erro: #cf242a;
+  --cor-erro-suave: #fbe0e1;
+  --cor-sucesso: #2e7d4f;
+
+  /* Métrica / layout */
+  --raio: 10px;
+  --raio-sm: 6px;
+  --sombra: 0 1px 3px rgba(26, 26, 26, 0.1), 0 1px 2px rgba(26, 26, 26, 0.06);
+  --sombra-forte: 0 10px 25px rgba(26, 26, 26, 0.18);
+  --espaco: 16px;
+  --fonte: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --largura-max: 1200px;
+}

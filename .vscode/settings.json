@@ -1,0 +1,10 @@
+{
+  "//": "Fixa o JDK 21 para este projeto (o JDK 26 instalado não é compatível).",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "C:\\Program Files\\Microsoft\\jdk-21.0.12.101-hotspot",
+      "default": true
+    }
+  ]
+}

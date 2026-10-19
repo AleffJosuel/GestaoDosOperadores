@@ -1,0 +1,7 @@
+nome;tipo;descricao;criterio;nivelEsperado;acaoPadrao
+Foco em Resultados;COMPORTAMENTAL;Mantém o foco nas metas;Entrega no prazo;4;
+;TECNICA;Competência sem nome;;3;
+Negociação;LIDERANCA;Tipo inválido de propósito;;3;
+Planejamento;COMPORTAMENTAL;Nível fora da faixa;;9;
+Organização;COMPORTAMENTAL;Nível não numérico;;abc;
+Foco em Resultados;COMPORTAMENTAL;Nome duplicado do arquivo;;4;
