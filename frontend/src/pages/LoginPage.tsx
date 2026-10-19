@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
 
 export function LoginPage() {
-  const { entrar } = useAuth();
+  const { entrar, motivoSaida } = useAuth();
   const navegar = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -39,6 +39,11 @@ export function LoginPage() {
         {erro && (
           <div className="estado-erro" role="alert">
             {erro}
+          </div>
+        )}
+        {!erro && motivoSaida && (
+          <div className="estado-aviso" role="status">
+            {motivoSaida}
           </div>
         )}
 

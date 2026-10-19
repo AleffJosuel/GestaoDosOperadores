@@ -371,6 +371,13 @@ table.tabela tbody tr:hover {
   padding: 14px 16px;
   margin-bottom: 16px;
 }
+.estado-aviso {
+  background: var(--cor-desenvolver-suave);
+  color: var(--cor-desenvolver);
+  border-radius: var(--raio);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
 .spinner {
   width: 28px;
   height: 28px;
