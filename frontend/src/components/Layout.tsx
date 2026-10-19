@@ -35,6 +35,9 @@ export function Layout() {
         <NavLink to="/pdi" className={linkClasse}>
           PDI
         </NavLink>
+        <NavLink to="/configuracoes" className={linkClasse}>
+          Configurações
+        </NavLink>
         <div className="rodape">
           <div title={email ?? undefined} style={{ marginBottom: 8, wordBreak: "break-all" }}>
             {email}

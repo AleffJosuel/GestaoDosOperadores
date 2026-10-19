@@ -124,6 +124,35 @@ export interface TokenResponse {
   expiraEmSegundos: number;
 }
 
+export interface RotuloNota {
+  nota: number;
+  rotulo: string;
+}
+
+export interface Configuracao {
+  limiteCritico: number;
+  limiteDesenvolver: number;
+  limiteBom: number;
+  rotulos: RotuloNota[];
+}
+
+export type TipoRegistro = "FEEDBACK" | "CONVERSA" | "OCORRENCIA" | "OUTRO";
+
+export interface Registro {
+  id: number;
+  colaboradorId: number;
+  tipo: TipoRegistro;
+  dataEvento: string;
+  descricao: string;
+  criadoEm: string;
+}
+
+export interface RegistroInput {
+  tipo: TipoRegistro;
+  dataEvento: string;
+  descricao: string;
+}
+
 export interface LinhaImportacao {
   linha: number;
   ok: boolean;

@@ -4,10 +4,13 @@ Back-end (Spring Boot 3 + PostgreSQL) do sistema do supervisor de turno.
 **Entrega 1:** autenticação, colaboradores e banco de competências.
 **Entrega 2:** avaliações com nota (1–5) por competência e histórico por colaborador.
 **Entrega 3:** login com token JWT (substitui o HTTP Basic), mapa de competências e dashboard.
-**Entrega 4 (atual):** PDI — plano de desenvolvimento individual (ações ligadas a avaliações/competências);
+**Entrega 4:** PDI — plano de desenvolvimento individual (ações ligadas a avaliações/competências);
 indicadores de PDI no dashboard; ficha do colaborador (impressão/PDF); rate limiting no login e cabeçalhos
 de segurança (CSP); e melhorias de UX (toasts, confirmações, busca).
-Há um front-end em `frontend/` (Vite + React + TypeScript). A importação virá depois.
+**Entrega 5:** importação de colaboradores e competências por CSV (relatório por linha).
+**Entrega 6 (atual):** registros de acompanhamento por colaborador (feedback/conversa/ocorrência, na ficha)
+e tela de Configurações (faixas de classificação + rótulos das notas 1–5, editáveis por supervisor).
+Há um front-end em `frontend/` (Vite + React + TypeScript).
 
 ## Requisitos
 - JDK 21 (o projeto não é compatível com versões mais novas, como o 26)
@@ -88,8 +91,11 @@ Use apenas dados fictícios até a empresa aprovar o uso de dados reais.
 | `/api/avaliacoes/{id}` | GET, PUT (corrige a avaliação) |
 | `/api/colaboradores/{id}/pdi` | GET (ações do colaborador), POST (nova ação) |
 | `/api/pdi/{id}` | GET, PUT (edita a ação: descrição, prazo, status, conclusão, evidência) |
+| `/api/colaboradores/{id}/acompanhamentos` | GET (registros, mais recente primeiro), POST (novo registro; apenas-acréscimo) |
+| `/api/colaboradores/importar` · `/api/competencias/importar` | POST multipart (campo `arquivo`, CSV → relatório por linha) |
 | `/api/mapa` | GET (colaboradores × competências com a nota atual e a classificação) |
 | `/api/dashboard` | GET (indicadores: médias, distribuição por faixa, competências mais críticas) |
+| `/api/configuracao` | GET, PUT (faixas de classificação e rótulos das notas 1–5 do supervisor) |
 
 Exceto `/api/sessao`, toda chamada exige `Authorization: Bearer <token>`.
 
@@ -113,7 +119,8 @@ Exemplo (PowerShell, continuando do bloco anterior; `1` é o id do colaborador):
 ## Front-end (`frontend/`)
 
 Interface web em Vite + React + TypeScript (login, colaboradores, competências, avaliações,
-mapa de competências, dashboard e troca de senha). As cores ficam todas em
+mapa de competências, dashboard, PDI, ficha com impressão/PDF e registros de acompanhamento,
+importação CSV, configurações e troca de senha). As cores ficam todas em
 `frontend/src/theme.css` — paleta extraída da logo oficial do cliente
 (vermelho `#cf242a` + preto + branco).
 

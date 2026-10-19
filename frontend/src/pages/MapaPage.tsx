@@ -15,20 +15,25 @@ const faixas = [
 ];
 
 export function MapaPage() {
-  const { dados, carregando, erro, recarregar } = useRequisicao(() => api.mapa());
+  const { dados, carregando, erro, recarregar } = useRequisicao(async () => {
+    const [mapa, config] = await Promise.all([api.mapa(), api.obterConfiguracao()]);
+    return { mapa, config };
+  });
   const [busca, setBusca] = useState("");
 
   if (carregando) return <Carregando />;
   if (erro) return <ErroBox mensagem={erro} onTentar={recarregar} />;
   if (!dados) return null;
 
-  const semDados = dados.colaboradores.length === 0 || dados.competencias.length === 0;
+  const { mapa, config } = dados;
+  const rotuloPorNota = new Map(config.rotulos.map((r) => [r.nota, r.rotulo]));
+  const semDados = mapa.colaboradores.length === 0 || mapa.competencias.length === 0;
   const termo = busca.trim().toLowerCase();
   const linhas = termo
-    ? dados.colaboradores.filter((l) =>
+    ? mapa.colaboradores.filter((l) =>
         [l.nome, l.cargo, l.setor].some((v) => v.toLowerCase().includes(termo))
       )
-    : dados.colaboradores;
+    : mapa.colaboradores;
 
   return (
     <>
@@ -61,7 +66,7 @@ export function MapaPage() {
               <thead>
                 <tr>
                   <th className="col-nome">Colaborador</th>
-                  {dados.competencias.map((c) => (
+                  {mapa.competencias.map((c) => (
                     <th key={c.id} title={`Nível esperado: ${c.nivelEsperado}`}>
                       {c.nome}
                     </th>
@@ -82,12 +87,12 @@ export function MapaPage() {
                       const classe = cel.classificacao
                         ? `cel-nota cel-${cel.classificacao.codigo}`
                         : "cel-nota cel-vazia";
+                      const dica =
+                        cel.nota != null
+                          ? `Nota ${cel.nota} — ${rotuloPorNota.get(cel.nota) ?? ""}`.trim()
+                          : "Sem avaliação";
                       return (
-                        <td
-                          key={cel.competenciaId}
-                          className={classe}
-                          title={cel.classificacao?.rotulo ?? "Sem avaliação"}
-                        >
+                        <td key={cel.competenciaId} className={classe} title={dica}>
                           {cel.nota ?? "—"}
                         </td>
                       );

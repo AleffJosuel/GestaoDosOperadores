@@ -8,6 +8,7 @@ import { ColaboradoresPage } from "./pages/ColaboradoresPage";
 import { CompetenciasPage } from "./pages/CompetenciasPage";
 import { PdiPage } from "./pages/PdiPage";
 import { FichaPage } from "./pages/FichaPage";
+import { ConfiguracoesPage } from "./pages/ConfiguracoesPage";
 
 export function App() {
   const { autenticado } = useAuth();
@@ -25,6 +26,7 @@ export function App() {
         <Route path="/competencias" element={<CompetenciasPage />} />
         <Route path="/pdi" element={<PdiPage />} />
         <Route path="/ficha/:colaboradorId" element={<FichaPage />} />
+        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

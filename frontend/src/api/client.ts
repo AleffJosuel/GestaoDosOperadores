@@ -6,10 +6,13 @@ import type {
   ColaboradorInput,
   Competencia,
   CompetenciaInput,
+  Configuracao,
   DashboardResponse,
   ImportacaoResultado,
   MapaResponse,
   PdiInput,
+  Registro,
+  RegistroInput,
   TokenResponse,
 } from "./types";
 
@@ -165,7 +168,18 @@ export const api = {
   atualizarPdi: (id: number, dados: PdiInput) =>
     request<AcaoPdi>("PUT", `/api/pdi/${id}`, dados),
 
+  // Registros de acompanhamento
+  listarAcompanhamentos: (colaboradorId: number) =>
+    request<Registro[]>("GET", `/api/colaboradores/${colaboradorId}/acompanhamentos`),
+  criarAcompanhamento: (colaboradorId: number, dados: RegistroInput) =>
+    request<Registro>("POST", `/api/colaboradores/${colaboradorId}/acompanhamentos`, dados),
+
   // Painel
   mapa: () => request<MapaResponse>("GET", "/api/mapa"),
   dashboard: () => request<DashboardResponse>("GET", "/api/dashboard"),
+
+  // Configuração (faixas + rótulos das notas)
+  obterConfiguracao: () => request<Configuracao>("GET", "/api/configuracao"),
+  salvarConfiguracao: (dados: Configuracao) =>
+    request<Configuracao>("PUT", "/api/configuracao", dados),
 };

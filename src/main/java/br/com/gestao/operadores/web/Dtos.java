@@ -6,11 +6,15 @@ import br.com.gestao.operadores.dominio.Classificacao;
 import br.com.gestao.operadores.dominio.Colaborador;
 import br.com.gestao.operadores.dominio.Competencia;
 import br.com.gestao.operadores.dominio.NotaCompetencia;
+import br.com.gestao.operadores.dominio.RegistroAcompanhamento;
 import br.com.gestao.operadores.dominio.StatusPdi;
 import br.com.gestao.operadores.dominio.TipoCompetencia;
+import br.com.gestao.operadores.dominio.TipoRegistro;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -163,6 +167,44 @@ public final class Dtos {
             funcaoArea = t(funcaoArea);
             evidencia = t(evidencia);
             observacao = t(observacao);
+        }
+    }
+
+    // ----- Configuração (faixas de classificação + rótulos das notas) -----
+
+    public record RotuloNotaDto(
+        @NotNull @Min(1) @Max(5) Integer nota,
+        @NotBlank @Size(max = 40) String rotulo) {
+        public RotuloNotaDto {
+            rotulo = t(rotulo);
+        }
+    }
+
+    public record ConfiguracaoResponse(BigDecimal limiteCritico, BigDecimal limiteDesenvolver,
+                                       BigDecimal limiteBom, List<RotuloNotaDto> rotulos) {}
+
+    public record ConfiguracaoRequest(
+        @NotNull @DecimalMin("1.00") @DecimalMax("5.00") BigDecimal limiteCritico,
+        @NotNull @DecimalMin("1.00") @DecimalMax("5.00") BigDecimal limiteDesenvolver,
+        @NotNull @DecimalMin("1.00") @DecimalMax("5.00") BigDecimal limiteBom,
+        @NotNull @Size(min = 5, max = 5) @Valid List<RotuloNotaDto> rotulos) {}
+
+    // ----- Registros de acompanhamento -----
+
+    public record RegistroRequest(
+        @NotNull TipoRegistro tipo,
+        @NotNull @PastOrPresent LocalDate dataEvento,
+        @NotBlank String descricao) {
+        public RegistroRequest {
+            descricao = t(descricao);
+        }
+    }
+
+    public record RegistroResponse(Long id, Long colaboradorId, TipoRegistro tipo,
+                                   LocalDate dataEvento, String descricao, Instant criadoEm) {
+        public static RegistroResponse de(RegistroAcompanhamento r) {
+            return new RegistroResponse(r.getId(), r.getColaboradorId(), r.getTipo(),
+                r.getDataEvento(), r.getDescricao(), r.getCriadoEm());
         }
     }
 
