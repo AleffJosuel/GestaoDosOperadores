@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Ações de PDI. Tudo é filtrado pelo supervisor logado pela cadeia ação → colaborador → supervisor
@@ -38,6 +40,17 @@ public class AcaoPdiService {
     public List<AcaoPdi> listar(Long colaboradorId) {
         colaboradorService.buscar(colaboradorId); // garante que o colaborador é do supervisor logado
         return acoes.findByColaboradorIdOrderByPrazoAsc(colaboradorId);
+    }
+
+    /** Todas as ações de PDI dos colaboradores do supervisor logado, com o nome de cada um. */
+    @Transactional(readOnly = true)
+    public List<Dtos.PdiItem> listarTodos() {
+        Map<Long, Colaborador> porId = colaboradorService.listar(true).stream()
+            .collect(Collectors.toMap(Colaborador::getId, Function.identity()));
+        if (porId.isEmpty()) return List.of();
+        return acoes.findByColaboradorIdInOrderByPrazoAsc(porId.keySet()).stream()
+            .map(a -> Dtos.PdiItem.de(a, porId.get(a.getColaboradorId())))
+            .toList();
     }
 
     @Transactional(readOnly = true)

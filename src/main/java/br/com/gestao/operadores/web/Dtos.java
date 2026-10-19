@@ -226,4 +226,17 @@ public final class Dtos {
                 a.getEvidencia(), a.getObservacao());
         }
     }
+
+    /** Ação de PDI com o nome do colaborador, para a visão da equipe (GET /api/pdi). */
+    public record PdiItem(Long id, Long colaboradorId, String colaboradorNome, boolean colaboradorAtivo,
+                          Long competenciaId, Long avaliacaoOrigemId, String descricao, String responsavel,
+                          String funcaoArea, Integer cargaHorariaMinutos, LocalDate prazo, StatusPdi status,
+                          LocalDate dataConclusao, String evidencia, String observacao) {
+        public static PdiItem de(AcaoPdi a, Colaborador c) {
+            return new PdiItem(a.getId(), a.getColaboradorId(), c.getNome(), c.isAtivo(),
+                a.getCompetenciaId(), a.getAvaliacaoOrigemId(), a.getDescricao(), a.getResponsavel(),
+                a.getFuncaoArea(), a.getCargaHorariaMinutos(), a.getPrazo(), a.getStatus(),
+                a.getDataConclusao(), a.getEvidencia(), a.getObservacao());
+        }
+    }
 }

@@ -304,6 +304,60 @@ table.tabela tbody tr:hover {
   font-weight: 600;
 }
 
+/* ---- PDI: resumo/filtros e destaque de atrasadas ---- */
+.pdi-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.pdi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie, #fff);
+  color: var(--cor-texto);
+}
+.pdi-chip:hover {
+  border-color: var(--cor-primaria);
+}
+.pdi-chip-ativo {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: var(--cor-texto-inverso);
+}
+.pdi-chip-num {
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+}
+.pdi-chip-ativo .pdi-chip-num {
+  background: rgba(255, 255, 255, 0.25);
+}
+.pdi-chip-alerta:not(.pdi-chip-ativo) {
+  border-color: var(--cor-critico);
+  color: var(--cor-critico);
+}
+.pdi-chip-alerta:not(.pdi-chip-ativo) .pdi-chip-num {
+  background: var(--cor-critico-suave);
+  color: var(--cor-critico);
+}
+.linha-alerta {
+  background: var(--cor-critico-suave);
+}
+.pdi-dica-nova {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+  align-self: center;
+}
+
 /* ---- Estados de carregamento / vazio / erro ---- */
 .estado {
   text-align: center;

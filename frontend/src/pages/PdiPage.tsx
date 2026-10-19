@@ -1,10 +1,11 @@
 import { useMemo, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox, Vazio } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
-import type { AcaoPdi, PdiInput, StatusPdi } from "../api/types";
+import type { AcaoPdi, PdiInput, PdiItem, StatusPdi } from "../api/types";
 
 const STATUS_LABEL: Record<StatusPdi, string> = {
   NAO_INICIADO: "Não iniciado",
@@ -16,13 +17,33 @@ const STATUS_ORDEM: StatusPdi[] = ["NAO_INICIADO", "PLANEJADO", "EM_ANDAMENTO", 
 const hoje = () => new Date().toISOString().slice(0, 10);
 const fmtData = (d: string | null) => (d ? d.split("-").reverse().join("/") : "—");
 
+type Filtro = "ABERTAS" | "ATRASADAS" | "CONCLUIDAS" | "TODAS";
+
+const aberta = (a: PdiItem) => a.status !== "CONCLUIDO";
+const atrasada = (a: PdiItem) => aberta(a) && !!a.prazo && a.prazo < hoje();
+
+/** Atrasadas primeiro; depois por prazo crescente (sem prazo por último). */
+function ordenar(itens: PdiItem[]): PdiItem[] {
+  return [...itens].sort((a, b) => {
+    const atrA = atrasada(a) ? 0 : 1;
+    const atrB = atrasada(b) ? 0 : 1;
+    if (atrA !== atrB) return atrA - atrB;
+    if (a.prazo && b.prazo) return a.prazo < b.prazo ? -1 : a.prazo > b.prazo ? 1 : 0;
+    if (a.prazo) return -1;
+    if (b.prazo) return 1;
+    return 0;
+  });
+}
+
 export function PdiPage() {
   const toast = useToast();
+  const todos = useRequisicao(() => api.listarTodosPdi(), []);
   const colaboradores = useRequisicao(() => api.listarColaboradores(true), []);
   const competencias = useRequisicao(() => api.listarCompetencias(true), []);
   const [colaboradorId, setColaboradorId] = useState<number | null>(null);
+  const [filtro, setFiltro] = useState<Filtro>("ABERTAS");
   const [criando, setCriando] = useState(false);
-  const [edicao, setEdicao] = useState<AcaoPdi | null>(null);
+  const [edicao, setEdicao] = useState<PdiItem | null>(null);
 
   const mapaCompetencias = useMemo(() => {
     const m = new Map<number, string>();
@@ -30,31 +51,76 @@ export function PdiPage() {
     return m;
   }, [competencias.dados]);
 
-  const lista = useRequisicao(
-    () => (colaboradorId ? api.listarPdi(colaboradorId) : Promise.resolve([])),
-    [colaboradorId]
+  // Base = tudo do colaborador filtrado (ou toda a equipe). Os contadores saem daqui.
+  const base = useMemo(() => {
+    const lista = todos.dados ?? [];
+    return colaboradorId ? lista.filter((a) => a.colaboradorId === colaboradorId) : lista;
+  }, [todos.dados, colaboradorId]);
+
+  const contagem = useMemo(
+    () => ({
+      abertas: base.filter(aberta).length,
+      atrasadas: base.filter(atrasada).length,
+      concluidas: base.filter((a) => a.status === "CONCLUIDO").length,
+    }),
+    [base]
   );
+
+  const visiveis = useMemo(() => {
+    const filtrada = base.filter((a) => {
+      if (filtro === "ABERTAS") return aberta(a);
+      if (filtro === "ATRASADAS") return atrasada(a);
+      if (filtro === "CONCLUIDAS") return a.status === "CONCLUIDO";
+      return true; // TODAS
+    });
+    return ordenar(filtrada);
+  }, [base, filtro]);
+
+  const chips: { id: Filtro; rotulo: string; valor: number | null }[] = [
+    { id: "ABERTAS", rotulo: "Abertas", valor: contagem.abertas },
+    { id: "ATRASADAS", rotulo: "Atrasadas", valor: contagem.atrasadas },
+    { id: "CONCLUIDAS", rotulo: "Concluídas", valor: contagem.concluidas },
+    { id: "TODAS", rotulo: "Todas", valor: null },
+  ];
+
+  const carregando = todos.carregando || competencias.carregando;
+  const formColaboradorId = edicao ? edicao.colaboradorId : colaboradorId;
 
   return (
     <>
       <div className="topo">
         <div>
           <h1>PDI — Plano de Desenvolvimento Individual</h1>
-          <p>Ações de desenvolvimento por colaborador, ligadas às avaliações.</p>
+          <p>Ações de desenvolvimento da equipe, ligadas às avaliações.</p>
         </div>
-        {colaboradorId && (
+        {colaboradorId ? (
           <button className="btn btn-primario" onClick={() => setCriando(true)}>
             Nova ação
           </button>
+        ) : (
+          <span className="pdi-dica-nova">Escolha um colaborador no filtro para criar uma ação.</span>
         )}
+      </div>
+
+      <div className="pdi-resumo">
+        {chips.map((c) => (
+          <button
+            key={c.id}
+            className={`pdi-chip ${filtro === c.id ? "pdi-chip-ativo" : ""} ${
+              c.id === "ATRASADAS" && c.valor ? "pdi-chip-alerta" : ""
+            }`}
+            onClick={() => setFiltro(c.id)}
+          >
+            {c.rotulo}
+            {c.valor !== null && <span className="pdi-chip-num">{c.valor}</span>}
+          </button>
+        ))}
       </div>
 
       <div className="toolbar">
         <div className="campo" style={{ marginBottom: 0, minWidth: 280 }}>
           <label htmlFor="colab">Colaborador</label>
-          {colaboradores.carregando ? (
-            <Carregando texto="Carregando…" />
-          ) : colaboradores.erro ? (
+          {colaboradores.erro ? (
             <ErroBox mensagem={colaboradores.erro} onTentar={colaboradores.recarregar} />
           ) : (
             <select
@@ -62,7 +128,7 @@ export function PdiPage() {
               value={colaboradorId ?? ""}
               onChange={(e) => setColaboradorId(e.target.value ? Number(e.target.value) : null)}
             >
-              <option value="">Selecione um colaborador…</option>
+              <option value="">Toda a equipe</option>
               {(colaboradores.dados ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nome} {c.ativo ? "" : "(inativo)"}
@@ -73,19 +139,24 @@ export function PdiPage() {
         </div>
       </div>
 
-      {!colaboradorId ? (
-        <Vazio texto="Escolha um colaborador para ver e criar ações de PDI." />
-      ) : lista.carregando ? (
+      {carregando ? (
         <Carregando />
-      ) : lista.erro ? (
-        <ErroBox mensagem={lista.erro} onTentar={lista.recarregar} />
-      ) : !lista.dados || lista.dados.length === 0 ? (
-        <Vazio texto="Nenhuma ação de PDI para este colaborador ainda." />
+      ) : todos.erro ? (
+        <ErroBox mensagem={todos.erro} onTentar={todos.recarregar} />
+      ) : visiveis.length === 0 ? (
+        <Vazio
+          texto={
+            (todos.dados ?? []).length === 0
+              ? "Nenhuma ação de PDI cadastrada ainda."
+              : "Nenhuma ação corresponde ao filtro."
+          }
+        />
       ) : (
         <div className="tabela-wrap cartao">
           <table className="tabela">
             <thead>
               <tr>
+                <th>Colaborador</th>
                 <th>Competência</th>
                 <th>Descrição</th>
                 <th>Responsável</th>
@@ -95,15 +166,18 @@ export function PdiPage() {
               </tr>
             </thead>
             <tbody>
-              {lista.dados.map((a) => {
-                const vencido =
-                  a.prazo && a.prazo < hoje() && a.status !== "CONCLUIDO";
+              {visiveis.map((a) => {
+                const vencido = atrasada(a);
                 return (
-                  <tr key={a.id}>
+                  <tr key={a.id} className={vencido ? "linha-alerta" : undefined}>
+                    <td style={{ whiteSpace: "normal" }}>
+                      <Link to={`/ficha/${a.colaboradorId}`}>{a.colaboradorNome}</Link>
+                      {a.colaboradorAtivo ? "" : " (inativo)"}
+                    </td>
                     <td style={{ whiteSpace: "normal" }}>
                       {mapaCompetencias.get(a.competenciaId) ?? `#${a.competenciaId}`}
                     </td>
-                    <td style={{ whiteSpace: "normal", maxWidth: 320 }}>{a.descricao}</td>
+                    <td style={{ whiteSpace: "normal", maxWidth: 280 }}>{a.descricao}</td>
                     <td>{a.responsavel ?? "—"}</td>
                     <td className={vencido ? "prazo-vencido" : undefined}>
                       {fmtData(a.prazo)}
@@ -125,9 +199,9 @@ export function PdiPage() {
         </div>
       )}
 
-      {(criando || edicao) && colaboradorId && (
+      {(criando || edicao) && formColaboradorId && (
         <PdiForm
-          colaboradorId={colaboradorId}
+          colaboradorId={formColaboradorId}
           acao={edicao}
           mapaCompetencias={mapaCompetencias}
           onFechar={() => {
@@ -138,7 +212,7 @@ export function PdiPage() {
             setCriando(false);
             setEdicao(null);
             toast.sucesso("Ação de PDI salva.");
-            lista.recarregar();
+            todos.recarregar();
           }}
         />
       )}

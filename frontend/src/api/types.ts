@@ -184,6 +184,11 @@ export interface AcaoPdi {
   observacao: string | null;
 }
 
+export interface PdiItem extends AcaoPdi {
+  colaboradorNome: string;
+  colaboradorAtivo: boolean;
+}
+
 export interface PdiInput {
   competenciaId?: number | null;
   avaliacaoOrigemId?: number | null;

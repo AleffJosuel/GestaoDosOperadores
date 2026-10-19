@@ -19,6 +19,11 @@ public class AcaoPdiController {
         this.service = service;
     }
 
+    @GetMapping("/api/pdi")
+    public List<Dtos.PdiItem> listarTodos() {
+        return service.listarTodos();
+    }
+
     @GetMapping("/api/colaboradores/{colaboradorId}/pdi")
     public List<Dtos.PdiResponse> listar(@PathVariable Long colaboradorId) {
         return service.listar(colaboradorId).stream().map(Dtos.PdiResponse::de).toList();

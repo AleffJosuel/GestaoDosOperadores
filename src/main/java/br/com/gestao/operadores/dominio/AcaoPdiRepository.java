@@ -10,6 +10,9 @@ public interface AcaoPdiRepository extends JpaRepository<AcaoPdi, Long> {
     // Prazo ASC: no PostgreSQL, prazos nulos (sem data) ficam por último.
     List<AcaoPdi> findByColaboradorIdOrderByPrazoAsc(Long colaboradorId);
 
+    // Todas as ações de um conjunto de colaboradores (visão da equipe no PDI).
+    List<AcaoPdi> findByColaboradorIdInOrderByPrazoAsc(Collection<Long> colaboradorIds);
+
     // Indicadores do dashboard (contagens por equipe).
     long countByColaboradorIdInAndStatus(Collection<Long> colaboradorIds, StatusPdi status);
     long countByColaboradorIdInAndStatusNot(Collection<Long> colaboradorIds, StatusPdi status);

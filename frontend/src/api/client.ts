@@ -11,6 +11,7 @@ import type {
   ImportacaoResultado,
   MapaResponse,
   PdiInput,
+  PdiItem,
   Registro,
   RegistroInput,
   TokenResponse,
@@ -161,6 +162,7 @@ export const api = {
     request<Avaliacao>("POST", `/api/colaboradores/${colaboradorId}/avaliacoes`, dados),
 
   // PDI
+  listarTodosPdi: () => request<PdiItem[]>("GET", "/api/pdi"),
   listarPdi: (colaboradorId: number) =>
     request<AcaoPdi[]>("GET", `/api/colaboradores/${colaboradorId}/pdi`),
   criarPdi: (colaboradorId: number, dados: PdiInput) =>
