@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, Clf, ErroBox, Vazio } from "../components/estados";
@@ -20,6 +21,8 @@ export function MapaPage() {
     return { mapa, config };
   });
   const [busca, setBusca] = useState("");
+  const [params, setParams] = useSearchParams();
+  const faixaFiltro = params.get("faixa");
 
   if (carregando) return <Carregando />;
   if (erro) return <ErroBox mensagem={erro} onTentar={recarregar} />;
@@ -29,11 +32,20 @@ export function MapaPage() {
   const rotuloPorNota = new Map(config.rotulos.map((r) => [r.nota, r.rotulo]));
   const semDados = mapa.colaboradores.length === 0 || mapa.competencias.length === 0;
   const termo = busca.trim().toLowerCase();
-  const linhas = termo
-    ? mapa.colaboradores.filter((l) =>
-        [l.nome, l.cargo, l.setor].some((v) => v.toLowerCase().includes(termo))
-      )
-    : mapa.colaboradores;
+  const faixaRotulo = faixas.find((f) => f.codigo === faixaFiltro)?.rotulo ?? faixaFiltro;
+
+  function limparFaixa() {
+    const p = new URLSearchParams(params);
+    p.delete("faixa");
+    setParams(p, { replace: true });
+  }
+
+  const linhas = mapa.colaboradores.filter((l) => {
+    if (faixaFiltro && l.classificacao?.codigo !== faixaFiltro) return false;
+    if (termo && ![l.nome, l.cargo, l.setor].some((v) => v.toLowerCase().includes(termo)))
+      return false;
+    return true;
+  });
 
   return (
     <>
@@ -56,9 +68,22 @@ export function MapaPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
+            {faixaFiltro && (
+              <button className="chip-filtro" onClick={limparFaixa} type="button">
+                Faixa: {faixaRotulo}
+                <span aria-hidden="true">✕</span>
+                <span className="sr-only">remover filtro</span>
+              </button>
+            )}
           </div>
           {linhas.length === 0 ? (
-            <Vazio texto="Nenhum colaborador corresponde à busca." />
+            <Vazio
+              texto={
+                faixaFiltro && !termo
+                  ? `Nenhum colaborador na faixa ${faixaRotulo}.`
+                  : "Nenhum colaborador corresponde à busca."
+              }
+            />
           ) : (
           <>
           <div className="mapa-wrap cartao">

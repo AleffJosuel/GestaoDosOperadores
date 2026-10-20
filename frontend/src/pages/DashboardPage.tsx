@@ -1,14 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
-import { Carregando, Clf, ErroBox } from "../components/estados";
-import type { FaixaContagem } from "../api/types";
-
-const corDaFaixa: Record<string, string> = {
-  CRITICO: "var(--cor-critico)",
-  A_DESENVOLVER: "var(--cor-desenvolver)",
-  ADEQUADO: "var(--cor-adequado)",
-  BOM: "var(--cor-bom)",
-};
+import { Carregando, ErroBox } from "../components/estados";
+import { DonutFaixas } from "../components/DonutFaixas";
 
 function fmt(media: number | null): string {
   return media == null ? "—" : media.toFixed(2).replace(".", ",");
@@ -16,6 +10,7 @@ function fmt(media: number | null): string {
 
 export function DashboardPage() {
   const { dados, carregando, erro, recarregar } = useRequisicao(() => api.dashboard());
+  const navegar = useNavigate();
 
   if (carregando) return <Carregando />;
   if (erro) return <ErroBox mensagem={erro} onTentar={recarregar} />;
@@ -46,23 +41,10 @@ export function DashboardPage() {
           {totalFaixas === 0 ? (
             <p style={{ color: "var(--cor-texto-suave)" }}>Ainda não há notas registradas.</p>
           ) : (
-            dados.distribuicao.map((f: FaixaContagem) => {
-              const pct = totalFaixas ? (f.quantidade / totalFaixas) * 100 : 0;
-              return (
-                <div className="barra-faixa" key={f.classificacao.codigo}>
-                  <span style={{ width: 120 }}>
-                    <Clf c={f.classificacao} />
-                  </span>
-                  <span className="trilho">
-                    <span
-                      className="preenche"
-                      style={{ width: `${pct}%`, background: corDaFaixa[f.classificacao.codigo] }}
-                    />
-                  </span>
-                  <span className="num">{f.quantidade}</span>
-                </div>
-              );
-            })
+            <DonutFaixas
+              distribuicao={dados.distribuicao}
+              onSelecionar={(codigo) => navegar(`/mapa?faixa=${codigo}`)}
+            />
           )}
         </section>
 

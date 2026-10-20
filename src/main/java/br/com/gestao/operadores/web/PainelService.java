@@ -93,21 +93,32 @@ public class PainelService {
     public Dtos.DashboardResponse dashboard() {
         Grade g = montarGrade();
 
+        // Distribuição por COLABORADOR: cada colaborador avaliado cai numa única faixa,
+        // pela sua média (mesmo critério da coluna "Média" do mapa). Assim o gráfico conta
+        // pessoas e o clique p/ filtrar o mapa por faixa sempre encontra os colaboradores.
         List<Short> todasAsNotas = new ArrayList<>();
-        for (Map<Long, Short> doColaborador : g.notaAtual().values()) {
+        Map<Classificacao, Long> porFaixa = new EnumMap<>(Classificacao.class);
+        for (Colaborador col : g.colaboradores()) {
+            Map<Long, Short> doColaborador = g.notaAtual().getOrDefault(col.getId(), Map.of());
             // conta só competências ainda ativas (as que aparecem no mapa)
+            List<Short> notasDoColaborador = new ArrayList<>();
             for (Competencia c : g.competencias()) {
                 Short nota = doColaborador.get(c.getId());
-                if (nota != null) todasAsNotas.add(nota);
+                if (nota != null) {
+                    notasDoColaborador.add(nota);
+                    todasAsNotas.add(nota);
+                }
+            }
+            Double mediaColaborador = media(notasDoColaborador);
+            if (mediaColaborador != null) {
+                porFaixa.merge(Classificacao.de(mediaColaborador, g.cfg()), 1L, Long::sum);
             }
         }
 
         List<Dtos.FaixaContagem> distribuicao = new ArrayList<>();
         for (Classificacao faixa : Classificacao.values()) {
-            long quantidade = todasAsNotas.stream()
-                .filter(n -> Classificacao.de(n, g.cfg()) == faixa)
-                .count();
-            distribuicao.add(new Dtos.FaixaContagem(Dtos.ClassificacaoDto.de(faixa), quantidade));
+            distribuicao.add(new Dtos.FaixaContagem(
+                Dtos.ClassificacaoDto.de(faixa), porFaixa.getOrDefault(faixa, 0L)));
         }
 
         List<Dtos.CompetenciaMedia> criticas = g.competencias().stream()
