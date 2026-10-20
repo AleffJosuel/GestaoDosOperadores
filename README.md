@@ -192,6 +192,10 @@ Requisitos: Node 18+ (testado no 24). Com o backend no ar em `http://localhost:8
 Para gerar o pacote de produção: `npm run build` (saída em `frontend/dist/`).
 O CORS do backend libera a origem `http://localhost:5173`.
 
+Testes do front (Vitest): `npm test` (ou `npm run test:watch`). Rodam com
+`TZ=America/Sao_Paulo` fixado no `vite.config.ts`, porque as regras de data são em
+horário local — ver `src/datas.ts`.
+
 O token JWT é guardado em `sessionStorage` (sai ao fechar a aba). É uma escolha de
 desenvolvimento: um token nesse local fica exposto a XSS. Para produção, migrar para
 cookie `HttpOnly` + proteção CSRF.
