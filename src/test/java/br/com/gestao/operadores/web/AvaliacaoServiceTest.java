@@ -52,6 +52,10 @@ class AvaliacaoServiceTest {
         return new Dtos.AvaliacaoRequest(DATA, "observação", List.of(notas));
     }
 
+    /**
+     * Cria o mock FORA de qualquer {@code when(...)} em andamento: criar mock com stub dentro do
+     * {@code thenReturn} de outra stubagem deixa a primeira inacabada (UnfinishedStubbingException).
+     */
     private Competencia competenciaComId(long id) {
         Competencia c = mock(Competencia.class);
         when(c.getId()).thenReturn(id);
@@ -64,10 +68,12 @@ class AvaliacaoServiceTest {
 
     @Test
     void criar_comDadosValidos_salvaComAsNotas() {
+        Competencia uma = competenciaComId(1L);
+        Competencia outra = competenciaComId(2L);
         when(colaboradorService.buscar(COLABORADOR)).thenReturn(colaboradorAtivo);
         when(logado.id()).thenReturn(SUPERVISOR);
         when(competencias.findBySupervisorIdAndIdIn(eq(SUPERVISOR), any()))
-            .thenReturn(List.of(competenciaComId(1L), competenciaComId(2L)));
+            .thenReturn(List.of(uma, outra));
         when(avaliacoes.existsByColaboradorIdAndDataAvaliacao(COLABORADOR, DATA)).thenReturn(false);
         when(avaliacoes.save(any(Avaliacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -94,11 +100,12 @@ class AvaliacaoServiceTest {
 
     @Test
     void criar_comCompetenciaDeOutroSupervisor_retorna404() {
+        Competencia doSupervisor = competenciaComId(1L);
         when(colaboradorService.buscar(COLABORADOR)).thenReturn(colaboradorAtivo);
         when(logado.id()).thenReturn(SUPERVISOR);
         // Pediu 2 competências, mas só 1 pertence ao supervisor.
         when(competencias.findBySupervisorIdAndIdIn(eq(SUPERVISOR), any()))
-            .thenReturn(List.of(competenciaComId(1L)));
+            .thenReturn(List.of(doSupervisor));
 
         assertThatThrownBy(() -> service.criar(COLABORADOR,
                 pedido(new Dtos.NotaRequest(1L, 5), new Dtos.NotaRequest(99L, 4))))
@@ -123,10 +130,11 @@ class AvaliacaoServiceTest {
 
     @Test
     void criar_comDataJaAvaliada_retornaConflito() {
+        Competencia doSupervisor = competenciaComId(1L);
         when(colaboradorService.buscar(COLABORADOR)).thenReturn(colaboradorAtivo);
         when(logado.id()).thenReturn(SUPERVISOR);
         when(competencias.findBySupervisorIdAndIdIn(eq(SUPERVISOR), any()))
-            .thenReturn(List.of(competenciaComId(1L)));
+            .thenReturn(List.of(doSupervisor));
         when(avaliacoes.existsByColaboradorIdAndDataAvaliacao(COLABORADOR, DATA)).thenReturn(true);
 
         assertThatThrownBy(() -> service.criar(COLABORADOR, pedido(new Dtos.NotaRequest(1L, 5))))
