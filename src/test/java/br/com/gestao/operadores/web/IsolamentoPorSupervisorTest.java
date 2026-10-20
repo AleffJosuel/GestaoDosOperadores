@@ -297,7 +297,8 @@ class IsolamentoPorSupervisorTest {
         Colaborador outroMeu = mock(Colaborador.class);
         when(outroMeu.getId()).thenReturn(11L);
 
-        when(colaboradores.findBySupervisorIdOrderByNomeAsc(SUPERVISOR)).thenReturn(List.of(meu, outroMeu));
+        when(colaboradores.findBySupervisorIdAndAtivoTrueOrderByNomeAsc(SUPERVISOR))
+            .thenReturn(List.of(meu, outroMeu));
         when(acoes.findByColaboradorIdInOrderByPrazoAsc(any())).thenReturn(List.of(
             new AcaoPdi(COLABORADOR, 1L, 2L, "minha ação",
                 null, null, null, null, StatusPdi.EM_ANDAMENTO, null, null, null)));
@@ -316,8 +317,35 @@ class IsolamentoPorSupervisorTest {
     }
 
     @Test
+    void pdi_visaoDaEquipe_naoTrazAcoesDeColaboradorDesativado() {
+        // Desativado = saiu da equipe. A visão de equipe pede só os ativos, então as ações
+        // de quem foi desativado não entram (nem o nome dele aparece na tela).
+        Colaborador ativo = mock(Colaborador.class);
+        when(ativo.getId()).thenReturn(COLABORADOR);
+        when(ativo.getNome()).thenReturn("Fulano");
+        when(ativo.isAtivo()).thenReturn(true);
+
+        when(colaboradores.findBySupervisorIdAndAtivoTrueOrderByNomeAsc(SUPERVISOR))
+            .thenReturn(List.of(ativo));
+        when(acoes.findByColaboradorIdInOrderByPrazoAsc(any())).thenReturn(List.of(
+            new AcaoPdi(COLABORADOR, 1L, 2L, "ação do ativo",
+                null, null, null, null, StatusPdi.EM_ANDAMENTO, null, null, null)));
+
+        List<Dtos.PdiItem> itens = pdiService.listarTodos();
+
+        // O repositório que inclui inativos não pode nem ser consultado aqui.
+        verify(colaboradores, never()).findBySupervisorIdOrderByNomeAsc(any());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Collection<Long>> ids = ArgumentCaptor.forClass(Collection.class);
+        verify(acoes).findByColaboradorIdInOrderByPrazoAsc(ids.capture());
+        assertThat(ids.getValue()).containsExactly(COLABORADOR); // só o ativo
+        assertThat(itens).singleElement()
+            .satisfies(i -> assertThat(i.colaboradorNome()).isEqualTo("Fulano"));
+    }
+
+    @Test
     void pdi_visaoDaEquipe_supervisorSemColaboradores_naoConsultaAcoes() {
-        when(colaboradores.findBySupervisorIdOrderByNomeAsc(SUPERVISOR)).thenReturn(List.of());
+        when(colaboradores.findBySupervisorIdAndAtivoTrueOrderByNomeAsc(SUPERVISOR)).thenReturn(List.of());
 
         assertThat(pdiService.listarTodos()).isEmpty();
 

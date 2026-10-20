@@ -42,10 +42,15 @@ public class AcaoPdiService {
         return acoes.findByColaboradorIdOrderByPrazoAsc(colaboradorId);
     }
 
-    /** Todas as ações de PDI dos colaboradores do supervisor logado, com o nome de cada um. */
+    /**
+     * Ações de PDI dos colaboradores ATIVOS do supervisor logado, com o nome de cada um.
+     * Desativado é quem saiu da equipe: não aparece na visão de equipe, pelo mesmo critério
+     * do dashboard (cujos contadores de PDI já consideram só os ativos). Para ver o histórico
+     * de alguém desativado, use a ficha dele, a partir de "Mostrar inativos" em Colaboradores.
+     */
     @Transactional(readOnly = true)
     public List<Dtos.PdiItem> listarTodos() {
-        Map<Long, Colaborador> porId = colaboradorService.listar(true).stream()
+        Map<Long, Colaborador> porId = colaboradorService.listar(false).stream()
             .collect(Collectors.toMap(Colaborador::getId, Function.identity()));
         if (porId.isEmpty()) return List.of();
         return acoes.findByColaboradorIdInOrderByPrazoAsc(porId.keySet()).stream()

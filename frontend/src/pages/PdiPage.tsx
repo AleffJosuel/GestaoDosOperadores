@@ -38,7 +38,10 @@ function ordenar(itens: PdiItem[]): PdiItem[] {
 export function PdiPage() {
   const toast = useToast();
   const todos = useRequisicao(() => api.listarTodosPdi(), []);
-  const colaboradores = useRequisicao(() => api.listarColaboradores(true), []);
+  // Só ativos: desativado saiu da equipe e não entra na visão de equipe nem no filtro.
+  const colaboradores = useRequisicao(() => api.listarColaboradores(false), []);
+  // Competências, ao contrário, vêm todas: uma desativada ainda precisa ter o nome
+  // exibido nas ações antigas que apontam para ela.
   const competencias = useRequisicao(() => api.listarCompetencias(true), []);
   const [colaboradorId, setColaboradorId] = useState<number | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("ABERTAS");
@@ -172,7 +175,6 @@ export function PdiPage() {
                   <tr key={a.id} className={vencido ? "linha-alerta" : undefined}>
                     <td style={{ whiteSpace: "normal" }}>
                       <Link to={`/ficha/${a.colaboradorId}`}>{a.colaboradorNome}</Link>
-                      {a.colaboradorAtivo ? "" : " (inativo)"}
                     </td>
                     <td style={{ whiteSpace: "normal" }}>
                       {mapaCompetencias.get(a.competenciaId) ?? `#${a.competenciaId}`}
