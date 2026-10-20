@@ -1,4 +1,27 @@
+# Build (backend)
 target/
+
+# Build / dependências (frontend)
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Segredos e ambiente
 .env
+.env.local
+*.local.properties
+application-local.properties
+
+# IDE
 .idea/
 *.iml
+
+# Dados reais da empresa — nunca versionar.
+# Os CSVs de exemplo (dados fictícios) ficam liberados pela exceção abaixo.
+*.xlsx
+*.xls
+*.csv
+!exemplos-csv/*.csv
+
+# Logs
+*.log

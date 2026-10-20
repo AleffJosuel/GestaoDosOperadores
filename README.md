@@ -12,6 +12,19 @@ de segurança (CSP); e melhorias de UX (toasts, confirmações, busca).
 e tela de Configurações (faixas de classificação + rótulos das notas 1–5, editáveis por supervisor).
 Há um front-end em `frontend/` (Vite + React + TypeScript).
 
+## Status
+
+Projeto em desenvolvimento, entregue por incrementos (as "Entregas" acima). As próximas
+frentes são testes automatizados cobrindo mais serviços e autenticação por cookie `HttpOnly`.
+
+Todos os dados do repositório são **fictícios** (ver `exemplos-csv/`). Credenciais e segredos
+ficam em variáveis de ambiente, fora do versionamento.
+
+## Stack
+
+Java 21 · Spring Boot 3.3 · Spring Security (JWT) · PostgreSQL 16 · Flyway · Maven ·
+React 18 · TypeScript 5 · Vite 5 · React Router
+
 ## Requisitos
 - JDK 21 (o projeto não é compatível com versões mais novas, como o 26)
 - PostgreSQL 16+ (instalado no Windows) **ou** Docker (`docker compose up -d`)
