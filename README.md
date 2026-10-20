@@ -25,6 +25,51 @@ ficam em variáveis de ambiente, fora do versionamento.
 Java 21 · Spring Boot 3.3 · Spring Security (JWT) · PostgreSQL 16 · Flyway · Maven ·
 React 18 · TypeScript 5 · Vite 5 · React Router
 
+## Telas
+
+> Capturas com **dados fictícios** — nenhum dado real de colaborador aparece aqui.
+
+**Dashboard** — indicadores da equipe, distribuição por faixa (clicar numa fatia filtra o mapa)
+e competências mais críticas.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Mapa de competências** — nota mais recente de cada colaborador em cada competência, com a
+média e a classificação da linha.
+
+![Mapa de competências](docs/screenshots/mapa.png)
+
+**PDI** — plano de desenvolvimento de toda a equipe, com resumo clicável, filtro por status
+e destaque das ações atrasadas.
+
+![PDI](docs/screenshots/pdi.png)
+
+**Ficha do colaborador** — dados, histórico de avaliações, ações de PDI e registros de
+acompanhamento, em layout preparado para impressão/PDF.
+
+![Ficha do colaborador](docs/screenshots/ficha.png)
+
+<details>
+<summary>Outras telas (colaboradores, competências, configurações e login)</summary>
+
+**Colaboradores** — cadastro, importação por CSV e desativação (sem exclusão, para preservar o histórico).
+
+![Colaboradores](docs/screenshots/colaboradores.png)
+
+**Competências** — catálogo com tipo (comportamental/técnica) e nível esperado.
+
+![Competências](docs/screenshots/competencias.png)
+
+**Configurações** — faixas de classificação e rótulos das notas, editáveis por supervisor.
+
+![Configurações](docs/screenshots/configuracoes.png)
+
+**Login** — único endpoint público; não há cadastro aberto.
+
+![Login](docs/screenshots/login.png)
+
+</details>
+
 ## Requisitos
 - JDK 21 (o projeto não é compatível com versões mais novas, como o 26)
 - PostgreSQL 16+ (instalado no Windows) **ou** Docker (`docker compose up -d`)

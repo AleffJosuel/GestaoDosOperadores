@@ -13,7 +13,7 @@ export function Layout() {
     <div className="app">
       <nav className="barra-lateral" aria-label="Navegação principal">
         <div className="marca">
-          <span className="marca-icone">PSCP</span>
+          <span className="marca-icone">GO</span>
           <strong>
             Gestão dos
             <br />

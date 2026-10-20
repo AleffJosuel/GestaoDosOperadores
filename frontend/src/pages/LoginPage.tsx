@@ -29,7 +29,7 @@ export function LoginPage() {
     <div className="login-tela">
       <form className="cartao login-cartao" onSubmit={aoEnviar}>
         <div className="marca">
-          <span className="marca-icone">PSCP</span>
+          <span className="marca-icone">GO</span>
           <strong>Gestão dos Operadores</strong>
         </div>
         <p style={{ marginTop: 0, color: "var(--cor-texto-suave)" }}>
