@@ -4,8 +4,7 @@ import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox, Vazio } from "../components/estados";
 import { Modal } from "../components/Modal";
 import type { NotaInput } from "../api/types";
-
-const hoje = () => new Date().toISOString().slice(0, 10);
+import { hoje } from "../datas";
 
 export function AvaliacaoModal({
   colaboradorId,

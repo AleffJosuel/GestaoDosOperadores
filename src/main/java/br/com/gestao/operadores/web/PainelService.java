@@ -98,6 +98,10 @@ public class PainelService {
         // pessoas e o clique p/ filtrar o mapa por faixa sempre encontra os colaboradores.
         List<Short> todasAsNotas = new ArrayList<>();
         Map<Classificacao, Long> porFaixa = new EnumMap<>(Classificacao.class);
+        // Conta aqui, e não por notaAtual.size(): aquele mapa tem uma entrada para todo colaborador
+        // com qualquer avaliação, inclusive quem só foi avaliado em competência hoje inativa — esse
+        // não entra em nenhuma faixa. Usar os dois números fazia o card e o donut se contradizerem.
+        int avaliados = 0;
         for (Colaborador col : g.colaboradores()) {
             Map<Long, Short> doColaborador = g.notaAtual().getOrDefault(col.getId(), Map.of());
             // conta só competências ainda ativas (as que aparecem no mapa)
@@ -111,6 +115,7 @@ public class PainelService {
             }
             Double mediaColaborador = media(notasDoColaborador);
             if (mediaColaborador != null) {
+                avaliados++;
                 porFaixa.merge(Classificacao.de(mediaColaborador, g.cfg()), 1L, Long::sum);
             }
         }
@@ -142,7 +147,7 @@ public class PainelService {
             g.colaboradores().size(),
             g.competencias().size(),
             totalAvaliacoes,
-            g.notaAtual().size(),
+            avaliados, // sempre igual à soma da distribuição
             media(todasAsNotas),
             distribuicao,
             criticas,

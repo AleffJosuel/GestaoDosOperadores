@@ -9,6 +9,7 @@ import { useToast } from "../components/Toasts";
 import { useConfirm } from "../components/Confirm";
 import { AvaliacaoModal } from "./AvaliacaoModal";
 import type { Colaborador, ColaboradorInput } from "../api/types";
+import { hoje } from "../datas";
 
 export function ColaboradoresPage() {
   const toast = useToast();
@@ -282,7 +283,7 @@ function ColaboradorForm({
           <input
             id="adm"
             type="date"
-            max={new Date().toISOString().slice(0, 10)}
+            max={hoje()}
             value={form.dataAdmissao ?? ""}
             onChange={(e) => set("dataAdmissao", e.target.value)}
           />

@@ -6,6 +6,7 @@ import { Carregando, ErroBox, Vazio } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
 import type { AcaoPdi, PdiInput, PdiItem, StatusPdi } from "../api/types";
+import { hoje } from "../datas";
 
 const STATUS_LABEL: Record<StatusPdi, string> = {
   NAO_INICIADO: "Não iniciado",
@@ -14,7 +15,6 @@ const STATUS_LABEL: Record<StatusPdi, string> = {
   CONCLUIDO: "Concluído",
 };
 const STATUS_ORDEM: StatusPdi[] = ["NAO_INICIADO", "PLANEJADO", "EM_ANDAMENTO", "CONCLUIDO"];
-const hoje = () => new Date().toISOString().slice(0, 10);
 const fmtData = (d: string | null) => (d ? d.split("-").reverse().join("/") : "—");
 
 type Filtro = "ABERTAS" | "ATRASADAS" | "CONCLUIDAS" | "TODAS";

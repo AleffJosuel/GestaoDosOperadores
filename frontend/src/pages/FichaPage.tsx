@@ -6,6 +6,7 @@ import { Carregando, ErroBox } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
 import type { RegistroInput, StatusPdi, TipoRegistro } from "../api/types";
+import { hoje as hojeLocal } from "../datas";
 
 const STATUS_LABEL: Record<StatusPdi, string> = {
   NAO_INICIADO: "Não iniciado",
@@ -201,7 +202,7 @@ function RegistroForm({
   onFechar: () => void;
   onSalvo: () => void;
 }) {
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeLocal();
   const [form, setForm] = useState<RegistroInput>({
     tipo: "FEEDBACK",
     dataEvento: hoje,
