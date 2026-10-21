@@ -383,98 +383,104 @@ function PdiForm({
           </>
         )}
 
-        <div className="campo">
-          <label htmlFor="desc">Descrição da ação</label>
-          <textarea
-            id="desc"
-            rows={2}
-            value={form.descricao}
-            onChange={(e) => set("descricao", e.target.value)}
-            required
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="resp">Responsável</label>
-          <input
-            id="resp"
-            value={form.responsavel ?? ""}
-            onChange={(e) => set("responsavel", e.target.value)}
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="fa">Função / área</label>
-          <input
-            id="fa"
-            value={form.funcaoArea ?? ""}
-            onChange={(e) => set("funcaoArea", e.target.value)}
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="ch">Carga horária (minutos)</label>
-          <input
-            id="ch"
-            type="number"
-            min={1}
-            value={form.cargaHorariaMinutos ?? ""}
-            onChange={(e) =>
-              set("cargaHorariaMinutos", e.target.value ? Number(e.target.value) : null)
-            }
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="prazo">Prazo</label>
-          <input
-            id="prazo"
-            type="date"
-            value={form.prazo ?? ""}
-            onChange={(e) => set("prazo", e.target.value)}
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="status">Status</label>
-          <select
-            id="status"
-            value={form.status ?? "NAO_INICIADO"}
-            onChange={(e) => set("status", e.target.value as StatusPdi)}
-          >
-            {STATUS_ORDEM.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABEL[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-        {form.status === "CONCLUIDO" && (
-          <>
-            <div className="campo">
-              <label htmlFor="dc">Data de conclusão</label>
-              <input
-                id="dc"
-                type="date"
-                max={hoje()}
-                value={form.dataConclusao ?? ""}
-                onChange={(e) => set("dataConclusao", e.target.value)}
-              />
-            </div>
-            <div className="campo">
-              <label htmlFor="ev">Evidência</label>
-              <textarea
-                id="ev"
-                rows={2}
-                value={form.evidencia ?? ""}
-                onChange={(e) => set("evidencia", e.target.value)}
-              />
-            </div>
-          </>
-        )}
-        <div className="campo">
-          <label htmlFor="obs">Observação</label>
-          <textarea
-            id="obs"
-            rows={2}
-            value={form.observacao ?? ""}
-            onChange={(e) => set("observacao", e.target.value)}
-          />
+        <div className="form-grade">
+          <div className="campo campo-largo">
+            <label htmlFor="desc">
+              Descrição da ação <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="desc"
+              rows={2}
+              value={form.descricao}
+              onChange={(e) => set("descricao", e.target.value)}
+              required
+            />
+          </div>
+          <div className="campo">
+            <label htmlFor="resp">Responsável</label>
+            <input
+              id="resp"
+              value={form.responsavel ?? ""}
+              onChange={(e) => set("responsavel", e.target.value)}
+              maxLength={150}
+            />
+          </div>
+          <div className="campo">
+            <label htmlFor="fa">Função / área</label>
+            <input
+              id="fa"
+              value={form.funcaoArea ?? ""}
+              onChange={(e) => set("funcaoArea", e.target.value)}
+              maxLength={80}
+            />
+          </div>
+          <div className="campo">
+            <label htmlFor="ch">Carga horária (minutos)</label>
+            <input
+              id="ch"
+              type="number"
+              min={1}
+              value={form.cargaHorariaMinutos ?? ""}
+              onChange={(e) =>
+                set("cargaHorariaMinutos", e.target.value ? Number(e.target.value) : null)
+              }
+            />
+          </div>
+          <div className="campo">
+            <label htmlFor="prazo">Prazo</label>
+            <input
+              id="prazo"
+              type="date"
+              value={form.prazo ?? ""}
+              onChange={(e) => set("prazo", e.target.value)}
+            />
+          </div>
+          <div className="campo">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              value={form.status ?? "NAO_INICIADO"}
+              onChange={(e) => set("status", e.target.value as StatusPdi)}
+            >
+              {STATUS_ORDEM.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_LABEL[s]}
+                </option>
+              ))}
+            </select>
+          </div>
+          {form.status === "CONCLUIDO" && (
+            <>
+              <div className="campo">
+                <label htmlFor="dc">Data de conclusão</label>
+                <input
+                  id="dc"
+                  type="date"
+                  max={hoje()}
+                  value={form.dataConclusao ?? ""}
+                  onChange={(e) => set("dataConclusao", e.target.value)}
+                />
+              </div>
+              <div className="campo campo-largo">
+                <label htmlFor="ev">Evidência</label>
+                <textarea
+                  id="ev"
+                  rows={2}
+                  value={form.evidencia ?? ""}
+                  onChange={(e) => set("evidencia", e.target.value)}
+                />
+              </div>
+            </>
+          )}
+          <div className="campo campo-largo">
+            <label htmlFor="obs">Observação</label>
+            <textarea
+              id="obs"
+              rows={2}
+              value={form.observacao ?? ""}
+              onChange={(e) => set("observacao", e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="modal-acoes">

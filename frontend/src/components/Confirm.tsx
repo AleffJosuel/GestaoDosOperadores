@@ -38,13 +38,17 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           <p style={{ marginTop: 0 }}>{opcoes.mensagem}</p>
           <div className="modal-acoes">
             {/* Em ação destrutiva o foco inicial fica no Cancelar: Enter por engano não apaga nada. */}
-            <button className="btn btn-sutil" onClick={() => responder(false)} autoFocus={opcoes.perigo}>
+            <button
+              className="btn btn-sutil"
+              onClick={() => responder(false)}
+              data-autofocus={opcoes.perigo ? "" : undefined}
+            >
               Cancelar
             </button>
             <button
               className={`btn ${opcoes.perigo ? "btn-perigo-cheio" : "btn-primario"}`}
               onClick={() => responder(true)}
-              autoFocus={!opcoes.perigo}
+              data-autofocus={opcoes.perigo ? undefined : ""}
             >
               {opcoes.confirmarTexto ?? "Confirmar"}
             </button>

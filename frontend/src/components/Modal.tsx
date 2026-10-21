@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Icone } from "./Icone";
 
 interface Props {
@@ -23,20 +23,23 @@ export function Modal({ titulo, children, onFechar }: Props) {
   // Ref para não reexecutar o efeito de montagem quando o pai passar uma função nova.
   const fechar = useRef(onFechar);
   fechar.current = onFechar;
+  // Capturado no primeiro render: no efeito seria tarde se algum filho já tivesse
+  // puxado o foco para dentro do modal ao montar.
+  const [anterior] = useState(() => document.activeElement as HTMLElement | null);
 
   useEffect(() => {
     const id = Symbol("modal");
     pilha.push(id);
-    const anterior = document.activeElement as HTMLElement | null;
     const el = caixa.current!;
 
-    // autoFocus de um filho já foi aplicado pelo React; senão, primeiro campo; senão, o diálogo.
-    if (!el.contains(document.activeElement)) {
-      const campo = el.querySelector<HTMLElement>(
+    // Foco inicial: o elemento marcado com data-autofocus; senão o primeiro campo; senão o diálogo.
+    // (Não usamos o autoFocus do React: no StrictMode o efeito remonta e ele não se repete.)
+    const inicial =
+      el.querySelector<HTMLElement>("[data-autofocus]") ??
+      el.querySelector<HTMLElement>(
         "input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled])"
       );
-      (campo ?? el).focus();
-    }
+    (inicial ?? el).focus();
 
     const overflowAntes = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -72,7 +75,7 @@ export function Modal({ titulo, children, onFechar }: Props) {
       if (pilha.length === 0) document.body.style.overflow = overflowAntes;
       if (anterior && document.contains(anterior)) anterior.focus();
     };
-  }, []);
+  }, [anterior]);
 
   return (
     <div className="modal-fundo" onMouseDown={() => fechar.current()}>

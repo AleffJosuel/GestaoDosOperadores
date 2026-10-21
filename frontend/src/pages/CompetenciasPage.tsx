@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { api, ApiError } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox, Vazio } from "../components/estados";
@@ -9,6 +9,7 @@ import { useConfirm } from "../components/Confirm";
 import type { Competencia, CompetenciaInput, TipoCompetencia } from "../api/types";
 import { Icone } from "../components/Icone";
 import { CampoBusca } from "../components/CampoBusca";
+import { ariaErro, ErroCampo, useFocoNoPrimeiroErro, type ErrosCampo } from "../components/campos";
 import { ThOrdenavel, useOrdenacao } from "../components/Ordenacao";
 
 const TIPO_LABEL: Record<TipoCompetencia, string> = {
@@ -261,7 +262,9 @@ function CompetenciaForm({
     criterio: competencia?.criterio ?? "",
     acaoPadrao: competencia?.acaoPadrao ?? "",
   });
-  const [campos, setCampos] = useState<Record<string, string>>({});
+  const [campos, setCampos] = useState<ErrosCampo>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoPrimeiroErro(formRef, campos);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -290,55 +293,81 @@ function CompetenciaForm({
 
   return (
     <Modal titulo={editando ? "Editar competência" : "Nova competência"} onFechar={onFechar}>
-      <form onSubmit={aoEnviar}>
-        {erro && (
-          <ErroBox mensagem={erro} />
-        )}
-        <div className="campo">
-          <label htmlFor="nome">Nome</label>
-          <input id="nome" value={form.nome} onChange={(e) => set("nome", e.target.value)} required />
-          {campos.nome && <span className="erro-campo">{campos.nome}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="tipo">Tipo</label>
-          <select
-            id="tipo"
-            value={form.tipo}
-            onChange={(e) => set("tipo", e.target.value as TipoCompetencia)}
-          >
-            <option value="COMPORTAMENTAL">Comportamental</option>
-            <option value="TECNICA">Técnica</option>
-          </select>
-        </div>
-        <div className="campo">
-          <label htmlFor="nivel">Nível esperado (1–5)</label>
-          <input
-            id="nivel"
-            type="number"
-            min={1}
-            max={5}
-            value={form.nivelEsperado ?? 5}
-            onChange={(e) => set("nivelEsperado", Number(e.target.value))}
-          />
-          {campos.nivelEsperado && <span className="erro-campo">{campos.nivelEsperado}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="desc">Descrição</label>
-          <textarea
-            id="desc"
-            rows={2}
-            value={form.descricao ?? ""}
-            onChange={(e) => set("descricao", e.target.value)}
-          />
-        </div>
-        <div className="campo">
-          <label htmlFor="acao">Ação padrão de desenvolvimento</label>
-          <input
-            id="acao"
-            value={form.acaoPadrao ?? ""}
-            onChange={(e) => set("acaoPadrao", e.target.value)}
-          />
-          {campos.acaoPadrao && <span className="erro-campo">{campos.acaoPadrao}</span>}
+      <form ref={formRef} onSubmit={aoEnviar}>
+        {erro && <ErroBox mensagem={erro} />}
+        <p className="form-legenda">
+          Campos com <span aria-hidden="true">*</span>
+          <span className="sr-only">asterisco</span> são obrigatórios.
+        </p>
+        <div className="form-grade">
+          <div className="campo campo-largo">
+            <label htmlFor="nome">
+              Nome <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="nome"
+              value={form.nome}
+              onChange={(e) => set("nome", e.target.value)}
+              required
+              maxLength={120}
+              {...ariaErro(campos, "nome", "nome")}
+            />
+            <ErroCampo erros={campos} nome="nome" id="nome" />
+          </div>
+          <div className="campo">
+            <label htmlFor="tipo">
+              Tipo <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <select
+              id="tipo"
+              value={form.tipo}
+              onChange={(e) => set("tipo", e.target.value as TipoCompetencia)}
+              {...ariaErro(campos, "tipo", "tipo")}
+            >
+              <option value="COMPORTAMENTAL">Comportamental</option>
+              <option value="TECNICA">Técnica</option>
+            </select>
+            <ErroCampo erros={campos} nome="tipo" id="tipo" />
+          </div>
+          <div className="campo">
+            <label htmlFor="nivel">Nível esperado</label>
+            <input
+              id="nivel"
+              type="number"
+              min={1}
+              max={5}
+              value={form.nivelEsperado ?? 5}
+              onChange={(e) => set("nivelEsperado", Number(e.target.value))}
+              aria-describedby={campos.nivelEsperado ? "nivel-erro" : "nivel-ajuda"}
+              aria-invalid={campos.nivelEsperado ? true : undefined}
+            />
+            <span id="nivel-ajuda" className="ajuda-campo">
+              De 1 a 5: a nota que se espera nesta competência.
+            </span>
+            <ErroCampo erros={campos} nome="nivelEsperado" id="nivel" />
+          </div>
+          <div className="campo campo-largo">
+            <label htmlFor="desc">Descrição</label>
+            <textarea
+              id="desc"
+              rows={2}
+              value={form.descricao ?? ""}
+              onChange={(e) => set("descricao", e.target.value)}
+              {...ariaErro(campos, "descricao", "desc")}
+            />
+            <ErroCampo erros={campos} nome="descricao" id="desc" />
+          </div>
+          <div className="campo campo-largo">
+            <label htmlFor="acao">Ação padrão de desenvolvimento</label>
+            <input
+              id="acao"
+              value={form.acaoPadrao ?? ""}
+              onChange={(e) => set("acaoPadrao", e.target.value)}
+              maxLength={200}
+              {...ariaErro(campos, "acaoPadrao", "acao")}
+            />
+            <ErroCampo erros={campos} nome="acaoPadrao" id="acao" />
+          </div>
         </div>
         <div className="modal-acoes">
           <button type="button" className="btn btn-sutil" onClick={onFechar}>

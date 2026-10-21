@@ -41,6 +41,35 @@ export class ApiError extends Error {
   }
 }
 
+/** Mensagem para quando o corpo do erro não traz uma (ex.: página HTML de um proxy). */
+function mensagemPadrao(status: number): string {
+  if (status === 403) return "Você não tem permissão para esta ação.";
+  if (status === 404) return "Registro não encontrado.";
+  if (status >= 502 && status <= 504) return "O servidor está indisponível no momento. Tente novamente.";
+  if (status >= 500) return "Erro interno no servidor. Tente novamente.";
+  return `Erro ${status} na requisição`;
+}
+
+/**
+ * Lê a resposta como JSON. Corpo de erro que não seja JSON vira a mensagem padrão do status
+ * (antes estourava no JSON.parse e aparecia só "Erro inesperado").
+ */
+async function lerResposta<T>(resp: Response): Promise<T> {
+  const texto = await resp.text();
+  let dados: { erro?: string; message?: string; campos?: Record<string, string> } | undefined;
+  try {
+    dados = texto ? JSON.parse(texto) : undefined;
+  } catch {
+    if (resp.ok) throw new ApiError(resp.status, "Resposta inválida do servidor.");
+    throw new ApiError(resp.status, mensagemPadrao(resp.status));
+  }
+  if (!resp.ok) {
+    const mensagem = (dados && (dados.erro || dados.message)) || mensagemPadrao(resp.status);
+    throw new ApiError(resp.status, mensagem, dados?.campos);
+  }
+  return dados as T;
+}
+
 async function request<T>(metodo: string, caminho: string, corpo?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -76,16 +105,7 @@ async function request<T>(metodo: string, caminho: string, corpo?: unknown): Pro
   }
 
   if (resp.status === 204) return undefined as T;
-
-  const texto = await resp.text();
-  const dados = texto ? JSON.parse(texto) : undefined;
-
-  if (!resp.ok) {
-    const mensagem =
-      (dados && (dados.erro || dados.message)) || `Erro ${resp.status} na requisição`;
-    throw new ApiError(resp.status, mensagem, dados?.campos);
-  }
-  return dados as T;
+  return lerResposta<T>(resp);
 }
 
 /** Envio multipart (upload de arquivo). Mesmo tratamento de erro do request(). */
@@ -107,15 +127,7 @@ async function upload<T>(caminho: string, arquivo: File): Promise<T> {
     if (token && aoDeslogar) aoDeslogar();
     throw new ApiError(401, "Sessão expirada. Entre novamente.");
   }
-
-  const texto = await resp.text();
-  const dados = texto ? JSON.parse(texto) : undefined;
-  if (!resp.ok) {
-    const mensagem =
-      (dados && (dados.erro || dados.message)) || `Erro ${resp.status} na requisição`;
-    throw new ApiError(resp.status, mensagem, dados?.campos);
-  }
-  return dados as T;
+  return lerResposta<T>(resp);
 }
 
 export const api = {

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
@@ -12,6 +12,7 @@ import type { Colaborador, ColaboradorInput } from "../api/types";
 import { hoje } from "../datas";
 import { Icone } from "../components/Icone";
 import { CampoBusca } from "../components/CampoBusca";
+import { ariaErro, ErroCampo, useFocoNoPrimeiroErro, type ErrosCampo } from "../components/campos";
 import { ThOrdenavel, useOrdenacao } from "../components/Ordenacao";
 
 type ColunaOrdem = "matricula" | "nome" | "cargo" | "setor" | "situacao";
@@ -286,7 +287,9 @@ function ColaboradorForm({
     dataAdmissao: colaborador?.dataAdmissao ?? "",
     escolaridade: colaborador?.escolaridade ?? "",
   });
-  const [campos, setCampos] = useState<Record<string, string>>({});
+  const [campos, setCampos] = useState<ErrosCampo>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoPrimeiroErro(formRef, campos);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -320,53 +323,93 @@ function ColaboradorForm({
 
   return (
     <Modal titulo={editando ? "Editar colaborador" : "Novo colaborador"} onFechar={onFechar}>
-      <form onSubmit={aoEnviar}>
-        {erro && (
-          <ErroBox mensagem={erro} />
-        )}
-        <div className="campo">
-          <label htmlFor="mat">Matrícula</label>
-          <input
-            id="mat"
-            value={form.matricula}
-            onChange={(e) => set("matricula", e.target.value)}
-            required
-          />
-          {campos.matricula && <span className="erro-campo">{campos.matricula}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="nome">Nome</label>
-          <input id="nome" value={form.nome} onChange={(e) => set("nome", e.target.value)} required />
-          {campos.nome && <span className="erro-campo">{campos.nome}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="cargo">Cargo</label>
-          <input id="cargo" value={form.cargo} onChange={(e) => set("cargo", e.target.value)} required />
-          {campos.cargo && <span className="erro-campo">{campos.cargo}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="setor">Setor</label>
-          <input id="setor" value={form.setor} onChange={(e) => set("setor", e.target.value)} required />
-          {campos.setor && <span className="erro-campo">{campos.setor}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="adm">Data de admissão (opcional)</label>
-          <input
-            id="adm"
-            type="date"
-            max={hoje()}
-            value={form.dataAdmissao ?? ""}
-            onChange={(e) => set("dataAdmissao", e.target.value)}
-          />
-          {campos.dataAdmissao && <span className="erro-campo">{campos.dataAdmissao}</span>}
-        </div>
-        <div className="campo">
-          <label htmlFor="esc">Escolaridade (opcional)</label>
-          <input
-            id="esc"
-            value={form.escolaridade ?? ""}
-            onChange={(e) => set("escolaridade", e.target.value)}
-          />
+      <form ref={formRef} onSubmit={aoEnviar}>
+        {erro && <ErroBox mensagem={erro} />}
+        <p className="form-legenda">
+          Campos com <span aria-hidden="true">*</span>
+          <span className="sr-only">asterisco</span> são obrigatórios.
+        </p>
+        <div className="form-grade">
+          <div className="campo">
+            <label htmlFor="mat">
+              Matrícula <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="mat"
+              value={form.matricula}
+              onChange={(e) => set("matricula", e.target.value)}
+              required
+              maxLength={30}
+              {...ariaErro(campos, "matricula", "mat")}
+            />
+            <ErroCampo erros={campos} nome="matricula" id="mat" />
+          </div>
+          <div className="campo campo-largo">
+            <label htmlFor="nome">
+              Nome <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="nome"
+              value={form.nome}
+              onChange={(e) => set("nome", e.target.value)}
+              required
+              maxLength={150}
+              autoComplete="off"
+              {...ariaErro(campos, "nome", "nome")}
+            />
+            <ErroCampo erros={campos} nome="nome" id="nome" />
+          </div>
+          <div className="campo">
+            <label htmlFor="cargo">
+              Cargo <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="cargo"
+              value={form.cargo}
+              onChange={(e) => set("cargo", e.target.value)}
+              required
+              maxLength={80}
+              {...ariaErro(campos, "cargo", "cargo")}
+            />
+            <ErroCampo erros={campos} nome="cargo" id="cargo" />
+          </div>
+          <div className="campo">
+            <label htmlFor="setor">
+              Setor <span className="obrigatorio" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="setor"
+              value={form.setor}
+              onChange={(e) => set("setor", e.target.value)}
+              required
+              maxLength={80}
+              {...ariaErro(campos, "setor", "setor")}
+            />
+            <ErroCampo erros={campos} nome="setor" id="setor" />
+          </div>
+          <div className="campo">
+            <label htmlFor="adm">Data de admissão</label>
+            <input
+              id="adm"
+              type="date"
+              max={hoje()}
+              value={form.dataAdmissao ?? ""}
+              onChange={(e) => set("dataAdmissao", e.target.value)}
+              {...ariaErro(campos, "dataAdmissao", "adm")}
+            />
+            <ErroCampo erros={campos} nome="dataAdmissao" id="adm" />
+          </div>
+          <div className="campo">
+            <label htmlFor="esc">Escolaridade</label>
+            <input
+              id="esc"
+              value={form.escolaridade ?? ""}
+              onChange={(e) => set("escolaridade", e.target.value)}
+              maxLength={60}
+              {...ariaErro(campos, "escolaridade", "esc")}
+            />
+            <ErroCampo erros={campos} nome="escolaridade" id="esc" />
+          </div>
         </div>
         <div className="modal-acoes">
           <button type="button" className="btn btn-sutil" onClick={onFechar}>
