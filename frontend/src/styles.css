@@ -13,45 +13,85 @@ body,
 
 body {
   font-family: var(--fonte);
+  font-size: var(--fs-base);
   color: var(--cor-texto);
-  /* Degradê vermelho → branco, fixo na viewport (o conteúdo fica em cartões brancos por cima). */
-  background: linear-gradient(165deg, #ef9aa0 0%, var(--cor-primaria-suave) 24%, var(--cor-fundo) 56%);
+  /* Degradê vermelho → neutro, fixo na viewport (o conteúdo fica em cartões brancos por cima). */
+  background: var(--fundo-app);
+  background-color: var(--cor-fundo);
   background-attachment: fixed;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--cor-acento);
+  color: var(--cor-primaria-escura);
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: var(--cor-primaria);
 }
 
 h1,
 h2,
 h3 {
   margin: 0 0 0.4em;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+}
+h2 {
+  font-size: var(--fs-h2);
+  font-weight: 650;
+}
+h3 {
+  font-size: var(--fs-h3);
+  font-weight: 650;
+}
+
+.texto-suave {
+  color: var(--cor-texto-suave);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco visível e consistente para qualquer elemento interativo navegado por teclado. */
+:focus-visible {
+  outline: 2px solid var(--cor-foco);
+  outline-offset: 2px;
 }
 
 /* ---- Botões ---- */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font: inherit;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  border: 1px solid transparent;
+  line-height: 1.25;
+  border: 1px solid var(--cor-borda-forte);
   border-radius: var(--raio-sm);
   padding: 8px 14px;
+  min-height: 36px;
   cursor: pointer;
-  background: var(--cor-superficie-2);
+  background: var(--cor-superficie);
   color: var(--cor-texto);
-  transition: background 0.15s, border-color 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transicao), border-color var(--transicao), color var(--transicao),
+    box-shadow var(--transicao);
 }
 .btn:hover {
-  background: var(--cor-borda);
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto);
 }
-.btn:focus-visible {
-  outline: 3px solid var(--cor-primaria);
-  outline-offset: 2px;
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .btn:disabled {
   opacity: 0.55;
@@ -59,26 +99,62 @@ h3 {
 }
 .btn-primario {
   background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
   color: var(--cor-texto-inverso);
+  box-shadow: 0 1px 2px rgba(168, 29, 34, 0.25);
 }
 .btn-primario:hover {
   background: var(--cor-primaria-escura);
+  border-color: var(--cor-primaria-escura);
+  color: var(--cor-texto-inverso);
 }
 .btn-sutil {
-  background: transparent;
+  background: var(--cor-superficie);
   border-color: var(--cor-borda);
 }
+/* Ação destrutiva discreta (em listas): neutra até o hover, para não competir com a principal. */
 .btn-perigo {
-  background: transparent;
-  border-color: var(--cor-critico);
-  color: var(--cor-critico);
+  background: var(--cor-superficie);
+  border-color: var(--cor-borda);
+  color: var(--cor-critico-texto);
 }
 .btn-perigo:hover {
   background: var(--cor-critico-suave);
+  border-color: var(--cor-critico);
+  color: var(--cor-critico-texto);
+}
+/* Ação destrutiva confirmada (botão do diálogo de confirmação). */
+.btn-perigo-cheio {
+  background: var(--cor-critico-texto);
+  border-color: var(--cor-critico-texto);
+  color: var(--cor-texto-inverso);
+}
+.btn-perigo-cheio:hover {
+  background: #8c171b;
+  border-color: #8c171b;
+  color: var(--cor-texto-inverso);
 }
 .btn-sm {
   padding: 5px 10px;
-  font-size: 0.85rem;
+  min-height: 30px;
+  font-size: 0.8125rem;
+}
+/* Botão só com ícone (precisa de aria-label). */
+.btn-icone {
+  padding: 6px;
+  min-width: 36px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--cor-texto-suave);
+}
+.btn-icone:hover {
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto);
+}
+.icone {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
 }
 
 /* ---- Formulários ---- */
@@ -86,21 +162,31 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: var(--esp-4);
 }
 .campo label {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
 }
 .campo input,
 .campo select,
 .campo textarea {
   font: inherit;
-  padding: 9px 11px;
-  border: 1px solid var(--cor-borda);
+  padding: 8px 11px;
+  min-height: 38px;
+  border: 1px solid var(--cor-borda-forte);
   border-radius: var(--raio-sm);
   background: var(--cor-superficie);
   color: var(--cor-texto);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+.campo textarea {
+  resize: vertical;
+}
+.campo input:hover:not(:disabled),
+.campo select:hover:not(:disabled),
+.campo textarea:hover:not(:disabled) {
+  border-color: var(--cor-texto-suave);
 }
 .campo input:focus,
 .campo select:focus,
@@ -109,9 +195,25 @@ h3 {
   border-color: var(--cor-primaria);
   box-shadow: 0 0 0 3px var(--cor-primaria-suave);
 }
+.campo input:disabled,
+.campo select:disabled,
+.campo textarea:disabled {
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto-suave);
+  cursor: not-allowed;
+}
+.campo input[aria-invalid="true"],
+.campo select[aria-invalid="true"],
+.campo textarea[aria-invalid="true"] {
+  border-color: var(--cor-critico);
+}
 .campo .erro-campo {
   color: var(--cor-erro);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
+}
+.campo .ajuda-campo {
+  color: var(--cor-texto-suave);
+  font-size: 0.8125rem;
 }
 
 /* ---- Cartões / superfícies ---- */
@@ -212,29 +314,53 @@ table.tabela {
 }
 table.tabela th,
 table.tabela td {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--cor-borda);
   text-align: left;
   white-space: nowrap;
+  vertical-align: middle;
 }
 table.tabela th {
-  font-size: 0.82rem;
+  font-size: var(--fs-xs);
+  font-weight: 650;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   color: var(--cor-texto-suave);
   background: var(--cor-superficie-2);
+}
+table.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+table.tabela tbody tr {
+  transition: background var(--transicao);
 }
 table.tabela tbody tr:hover {
   background: var(--cor-fundo);
 }
+table.tabela td.col-num,
+table.tabela th.col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.tabela td.col-acoes,
+table.tabela th.col-acoes {
+  text-align: right;
+  width: 1%;
+}
 
 /* ---- Selos / estados ---- */
-.selo {
-  display: inline-block;
+.selo,
+.clf,
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 0.78rem;
+  border-radius: var(--raio-pilula);
+  font-size: var(--fs-xs);
   font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
 }
 .selo-inativo {
   background: var(--cor-superficie-2);
@@ -242,65 +368,62 @@ table.tabela tbody tr:hover {
 }
 .selo-ativo {
   background: var(--cor-bom-suave);
-  color: var(--cor-bom);
+  color: var(--cor-bom-texto);
 }
 .selo-tipo {
-  background: var(--cor-primaria-suave);
-  color: var(--cor-primaria-escura);
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto);
+}
+/* Bolinha de status antes do texto (redundante ao texto: decorativa). */
+.selo-ativo::before,
+.selo-inativo::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* Classificação */
-.clf {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
+.clf-sem {
+  color: var(--cor-texto-suave);
 }
 .clf-CRITICO {
   background: var(--cor-critico-suave);
-  color: var(--cor-critico);
+  color: var(--cor-critico-texto);
 }
 .clf-A_DESENVOLVER {
   background: var(--cor-desenvolver-suave);
-  color: var(--cor-primaria-escura);
+  color: var(--cor-desenvolver-texto);
 }
 .clf-ADEQUADO {
   background: var(--cor-adequado-suave);
-  color: #7a6407;
+  color: var(--cor-adequado-texto);
 }
 .clf-BOM {
   background: var(--cor-bom-suave);
-  color: var(--cor-bom);
+  color: var(--cor-bom-texto);
 }
 
 /* Status do PDI */
-.status {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
 .status-NAO_INICIADO {
   background: var(--cor-superficie-2);
   color: var(--cor-texto-suave);
 }
 .status-PLANEJADO {
-  background: var(--cor-primaria-suave);
-  color: var(--cor-primaria-escura);
+  background: var(--cor-info-suave);
+  color: var(--cor-info);
 }
 .status-EM_ANDAMENTO {
   background: var(--cor-desenvolver-suave);
-  color: var(--cor-primaria-escura);
+  color: var(--cor-desenvolver-texto);
 }
 .status-CONCLUIDO {
   background: var(--cor-bom-suave);
-  color: var(--cor-bom);
+  color: var(--cor-bom-texto);
 }
 .prazo-vencido {
-  color: var(--cor-critico);
+  color: var(--cor-critico-texto);
   font-weight: 600;
 }
 
@@ -360,23 +483,60 @@ table.tabela tbody tr:hover {
 
 /* ---- Estados de carregamento / vazio / erro ---- */
 .estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--esp-2);
   text-align: center;
   padding: 48px 20px;
   color: var(--cor-texto-suave);
 }
+.estado-icone {
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  border-radius: 50%;
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto-suave);
+}
+.estado-vazio {
+  background: var(--cor-superficie);
+  border: 1px dashed var(--cor-borda-forte);
+  border-radius: var(--raio);
+}
+/* Faixas de mensagem (erro / aviso / sucesso): borda à esquerda + ícone, não só cor. */
+.estado-erro,
+.estado-aviso,
+.estado-sucesso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: var(--raio-sm);
+  border-left: 4px solid currentColor;
+  padding: 12px 14px;
+  margin-bottom: var(--esp-4);
+  font-size: var(--fs-sm);
+}
 .estado-erro {
   background: var(--cor-erro-suave);
   color: var(--cor-erro);
-  border-radius: var(--raio);
-  padding: 14px 16px;
-  margin-bottom: 16px;
 }
 .estado-aviso {
-  background: var(--cor-desenvolver-suave);
-  color: var(--cor-desenvolver);
-  border-radius: var(--raio);
-  padding: 14px 16px;
-  margin-bottom: 16px;
+  background: var(--cor-aviso-suave);
+  color: var(--cor-aviso-texto);
+}
+.estado-sucesso {
+  background: var(--cor-sucesso-suave);
+  color: var(--cor-sucesso-texto);
+}
+.estado-erro .icone,
+.estado-aviso .icone,
+.estado-sucesso .icone {
+  margin-top: 1px;
+}
+.estado-erro .btn {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 .spinner {
   width: 28px;
@@ -620,19 +780,19 @@ table.mapa thead th.col-nome {
 }
 .cel-CRITICO {
   background: var(--cor-critico-suave);
-  color: var(--cor-critico);
+  color: var(--cor-critico-texto);
 }
 .cel-A_DESENVOLVER {
   background: var(--cor-desenvolver-suave);
-  color: var(--cor-primaria-escura);
+  color: var(--cor-desenvolver-texto);
 }
 .cel-ADEQUADO {
   background: var(--cor-adequado-suave);
-  color: #7a6407;
+  color: var(--cor-adequado-texto);
 }
 .cel-BOM {
   background: var(--cor-bom-suave);
-  color: var(--cor-bom);
+  color: var(--cor-bom-texto);
 }
 
 /* ---- Modal ---- */
@@ -672,7 +832,7 @@ table.mapa thead th.col-nome {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #ef9aa0 0%, var(--cor-primaria-suave) 30%, var(--cor-fundo) 65%);
+  background: var(--fundo-app);
 }
 .login-cartao {
   width: 100%;
@@ -846,6 +1006,18 @@ table.mapa thead th.col-nome {
   }
   .toasts {
     display: none !important;
+  }
+}
+
+/* Quem pede menos movimento no sistema operacional não recebe animações nem transições. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
