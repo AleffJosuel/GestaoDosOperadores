@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, Clf, ErroBox, Vazio } from "../components/estados";
+import { CampoBusca } from "../components/CampoBusca";
+import { Icone } from "../components/Icone";
 
 function fmt(media: number | null): string {
   return media == null ? "—" : media.toFixed(2).replace(".", ",");
@@ -61,17 +63,16 @@ export function MapaPage() {
       ) : (
         <>
           <div className="toolbar">
-            <input
-              className="busca"
-              type="search"
-              placeholder="Buscar colaborador por nome, cargo ou setor…"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+            <CampoBusca
+              valor={busca}
+              onMudar={setBusca}
+              rotulo="Buscar colaborador no mapa"
+              placeholder="Nome, cargo ou setor…"
             />
             {faixaFiltro && (
               <button className="chip-filtro" onClick={limparFaixa} type="button">
                 Faixa: {faixaRotulo}
-                <span aria-hidden="true">✕</span>
+                <Icone nome="fechar" />
                 <span className="sr-only">remover filtro</span>
               </button>
             )}

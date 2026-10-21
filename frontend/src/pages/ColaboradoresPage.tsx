@@ -10,6 +10,25 @@ import { useConfirm } from "../components/Confirm";
 import { AvaliacaoModal } from "./AvaliacaoModal";
 import type { Colaborador, ColaboradorInput } from "../api/types";
 import { hoje } from "../datas";
+import { Icone } from "../components/Icone";
+import { CampoBusca } from "../components/CampoBusca";
+import { ThOrdenavel, useOrdenacao } from "../components/Ordenacao";
+
+type ColunaOrdem = "matricula" | "nome" | "cargo" | "setor" | "situacao";
+const COLUNAS: [ColunaOrdem, string][] = [
+  ["matricula", "Matrícula"],
+  ["nome", "Nome"],
+  ["cargo", "Cargo"],
+  ["setor", "Setor"],
+  ["situacao", "Situação"],
+];
+const VALOR_COLUNA: Record<ColunaOrdem, (c: Colaborador) => string> = {
+  matricula: (c) => c.matricula,
+  nome: (c) => c.nome,
+  cargo: (c) => c.cargo,
+  setor: (c) => c.setor,
+  situacao: (c) => (c.ativo ? "Ativo" : "Inativo"),
+};
 
 export function ColaboradoresPage() {
   const toast = useToast();
@@ -33,6 +52,7 @@ export function ColaboradoresPage() {
       [c.nome, c.matricula, c.cargo, c.setor].some((v) => v.toLowerCase().includes(termo))
     );
   }, [lista.dados, busca]);
+  const ordem = useOrdenacao(filtrados, VALOR_COLUNA, "nome");
 
   async function alterarAtivo(c: Colaborador) {
     if (c.ativo) {
@@ -63,21 +83,22 @@ export function ColaboradoresPage() {
         </div>
         <div className="linha-acoes">
           <button className="btn btn-sutil" onClick={() => setImportando(true)}>
+            <Icone nome="enviar" />
             Importar CSV
           </button>
           <button className="btn btn-primario" onClick={() => setCriando(true)}>
+            <Icone nome="mais" />
             Novo colaborador
           </button>
         </div>
       </div>
 
       <div className="toolbar">
-        <input
-          className="busca"
-          type="search"
-          placeholder="Buscar por nome, matrícula, cargo ou setor…"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
+        <CampoBusca
+          valor={busca}
+          onMudar={setBusca}
+          rotulo="Buscar colaborador"
+          placeholder="Nome, matrícula, cargo ou setor…"
         />
         <label className="check-inline">
           <input
@@ -94,60 +115,112 @@ export function ColaboradoresPage() {
       ) : lista.erro ? (
         <ErroBox mensagem={lista.erro} onTentar={lista.recarregar} />
       ) : !lista.dados || lista.dados.length === 0 ? (
-        <Vazio texto="Nenhum colaborador cadastrado ainda." />
+        <Vazio
+          texto={
+            incluirInativos
+              ? "Nenhum colaborador cadastrado ainda."
+              : "Nenhum colaborador ativo. Cadastre um ou marque “Mostrar inativos”."
+          }
+          acao={
+            <button className="btn btn-primario" onClick={() => setCriando(true)}>
+              <Icone nome="mais" />
+              Novo colaborador
+            </button>
+          }
+        />
       ) : filtrados.length === 0 ? (
-        <Vazio texto="Nenhum colaborador corresponde à busca." />
+        <Vazio
+          texto={`Nenhum colaborador corresponde a “${busca.trim()}”.`}
+          acao={
+            <button className="btn btn-sutil" onClick={() => setBusca("")}>
+              Limpar busca
+            </button>
+          }
+        />
       ) : (
-        <div className="tabela-wrap cartao">
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>Matrícula</th>
-                <th>Nome</th>
-                <th>Cargo</th>
-                <th>Setor</th>
-                <th>Situação</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.matricula}</td>
-                  <td style={{ whiteSpace: "normal" }}>{c.nome}</td>
-                  <td>{c.cargo}</td>
-                  <td>{c.setor}</td>
-                  <td>
-                    <span className={`selo ${c.ativo ? "selo-ativo" : "selo-inativo"}`}>
-                      {c.ativo ? "Ativo" : "Inativo"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="linha-acoes">
-                      {c.ativo && (
-                        <button className="btn btn-sm btn-primario" onClick={() => setAvaliando(c)}>
-                          Avaliar
-                        </button>
-                      )}
-                      <Link className="btn btn-sm btn-sutil" to={`/ficha/${c.id}`}>
-                        Ficha
-                      </Link>
-                      <button className="btn btn-sm btn-sutil" onClick={() => setEdicao(c)}>
-                        Editar
-                      </button>
-                      <button
-                        className={`btn btn-sm ${c.ativo ? "btn-perigo" : "btn-sutil"}`}
-                        onClick={() => alterarAtivo(c)}
-                      >
-                        {c.ativo ? "Desativar" : "Reativar"}
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <p className="contagem" aria-live="polite">
+            {filtrados.length === lista.dados.length
+              ? `${lista.dados.length} colaborador(es)`
+              : `${filtrados.length} de ${lista.dados.length} colaborador(es)`}
+          </p>
+          <div className="tabela-wrap cartao">
+            <table className="tabela">
+              <thead>
+                <tr>
+                  {COLUNAS.map(([chave, rotulo]) => (
+                    <ThOrdenavel
+                      key={chave}
+                      rotulo={rotulo}
+                      ativo={ordem.chave === chave}
+                      dir={ordem.dir}
+                      onOrdenar={() => ordem.alternar(chave)}
+                    />
+                  ))}
+                  <th className="col-acoes">
+                    <span className="sr-only">Ações</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {ordem.ordenados.map((c) => (
+                  <tr key={c.id}>
+                    <td className="num">{c.matricula}</td>
+                    <td style={{ whiteSpace: "normal" }}>
+                      <Link className="link-linha" to={`/ficha/${c.id}`}>
+                        {c.nome}
+                      </Link>
+                    </td>
+                    <td>{c.cargo}</td>
+                    <td>{c.setor}</td>
+                    <td>
+                      <span className={`selo ${c.ativo ? "selo-ativo" : "selo-inativo"}`}>
+                        {c.ativo ? "Ativo" : "Inativo"}
+                      </span>
+                    </td>
+                    <td className="col-acoes">
+                      <div className="linha-acoes acoes-tabela">
+                        {c.ativo && (
+                          <button
+                            className="btn btn-sm btn-sutil"
+                            onClick={() => setAvaliando(c)}
+                            aria-label={`Avaliar ${c.nome}`}
+                          >
+                            <Icone nome="estrela" />
+                            Avaliar
+                          </button>
+                        )}
+                        <Link
+                          className="btn btn-sm btn-sutil"
+                          to={`/ficha/${c.id}`}
+                          aria-label={`Ficha de ${c.nome}`}
+                        >
+                          <Icone nome="ficha" />
+                          Ficha
+                        </Link>
+                        <button
+                          className="btn btn-sm btn-sutil"
+                          onClick={() => setEdicao(c)}
+                          aria-label={`Editar ${c.nome}`}
+                        >
+                          <Icone nome="editar" />
+                          Editar
+                        </button>
+                        <button
+                          className={`btn btn-sm ${c.ativo ? "btn-perigo" : "btn-sutil"}`}
+                          onClick={() => alterarAtivo(c)}
+                          aria-label={`${c.ativo ? "Desativar" : "Reativar"} ${c.nome}`}
+                        >
+                          {c.ativo ? "Desativar" : "Reativar"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {(criando || edicao) && (

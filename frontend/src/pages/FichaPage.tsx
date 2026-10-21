@@ -5,6 +5,7 @@ import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
+import { Icone } from "../components/Icone";
 import type { RegistroInput, StatusPdi, TipoRegistro } from "../api/types";
 import { hoje as hojeLocal } from "../datas";
 
@@ -60,9 +61,11 @@ export function FichaPage() {
         </div>
         <div className="linha-acoes no-print">
           <Link className="btn btn-sutil" to="/colaboradores">
+            <Icone nome="voltar" />
             Voltar
           </Link>
           <button className="btn btn-primario" onClick={() => window.print()}>
+            <Icone nome="imprimir" />
             Imprimir / PDF
           </button>
         </div>
@@ -136,7 +139,9 @@ export function FichaPage() {
                     <td style={{ whiteSpace: "normal" }}>{a.descricao}</td>
                     <td>{a.responsavel ?? "—"}</td>
                     <td>{fmtData(a.prazo)}</td>
-                    <td>{STATUS_LABEL[a.status]}</td>
+                    <td>
+                      <span className={`status status-${a.status}`}>{STATUS_LABEL[a.status]}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -149,6 +154,7 @@ export function FichaPage() {
         <div className="ficha-secao-topo">
           <h2>Acompanhamentos ({acompanhamentos.length})</h2>
           <button className="btn btn-sm btn-sutil no-print" onClick={() => setRegistrando(true)}>
+            <Icone nome="mais" />
             Novo registro
           </button>
         </div>

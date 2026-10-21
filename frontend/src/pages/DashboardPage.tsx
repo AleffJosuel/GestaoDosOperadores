@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox } from "../components/estados";
 import { DonutFaixas } from "../components/DonutFaixas";
+import { Icone, type NomeIcone } from "../components/Icone";
 
 function fmt(media: number | null): string {
   return media == null ? "—" : media.toFixed(2).replace(".", ",");
@@ -28,18 +29,43 @@ export function DashboardPage() {
       </div>
 
       <div className="grade-cartoes">
-        <Metrica valor={dados.colaboradoresAtivos} rotulo="Colaboradores ativos" />
-        <Metrica valor={dados.competenciasAtivas} rotulo="Competências ativas" />
-        <Metrica valor={dados.colaboradoresAvaliados} rotulo="Colaboradores avaliados" />
-        <Metrica valor={dados.totalAvaliacoes} rotulo="Avaliações registradas" />
-        <Metrica valor={fmt(dados.mediaGeral)} rotulo="Média geral (1–5)" />
+        <Metrica
+          valor={dados.colaboradoresAtivos}
+          rotulo="Colaboradores ativos"
+          icone="usuarios"
+          para="/colaboradores"
+        />
+        <Metrica
+          valor={dados.competenciasAtivas}
+          rotulo="Competências ativas"
+          icone="alvo"
+          para="/competencias"
+        />
+        <Metrica
+          valor={dados.colaboradoresAvaliados}
+          rotulo="Colaboradores avaliados"
+          contexto={`de ${dados.colaboradoresAtivos} ativos`}
+          icone="sucesso"
+          para="/mapa"
+        />
+        <Metrica valor={dados.totalAvaliacoes} rotulo="Avaliações registradas" icone="ficha" />
+        <Metrica
+          valor={fmt(dados.mediaGeral)}
+          rotulo="Média geral"
+          contexto="escala de 1 a 5"
+          icone="estrela"
+          para="/mapa"
+        />
       </div>
 
       <div className="painel-duplo">
-        <section className="cartao bloco">
-          <h2>Distribuição por faixa</h2>
+        <section className="cartao bloco" aria-labelledby="titulo-faixas">
+          <div className="bloco-topo">
+            <h2 id="titulo-faixas">Distribuição por faixa</h2>
+            <span className="bloco-dica">Clique numa faixa para ver quem está nela</span>
+          </div>
           {totalFaixas === 0 ? (
-            <p style={{ color: "var(--cor-texto-suave)" }}>Ainda não há notas registradas.</p>
+            <p className="texto-suave">Ainda não há notas registradas.</p>
           ) : (
             <DonutFaixas
               distribuicao={dados.distribuicao}
@@ -48,23 +74,39 @@ export function DashboardPage() {
           )}
         </section>
 
-        <section className="cartao bloco">
-          <h2>Competências mais críticas</h2>
+        <section className="cartao bloco" aria-labelledby="titulo-criticas">
+          <div className="bloco-topo">
+            <h2 id="titulo-criticas">Competências mais críticas</h2>
+            <Link className="link-acao" to="/mapa">
+              Ver mapa <Icone nome="direita" />
+            </Link>
+          </div>
           {dados.competenciasCriticas.length === 0 ? (
-            <p style={{ color: "var(--cor-texto-suave)" }}>Sem dados suficientes.</p>
+            <p className="texto-suave">Sem dados suficientes.</p>
           ) : (
-            <table className="tabela">
+            <table className="tabela tabela-compacta">
+              <caption className="sr-only">Menores médias por competência, de 1 a 5</caption>
               <thead>
                 <tr>
                   <th>Competência</th>
-                  <th>Média</th>
+                  <th className="col-num">Média (1–5)</th>
                 </tr>
               </thead>
               <tbody>
                 {dados.competenciasCriticas.map((c) => (
                   <tr key={c.id}>
                     <td style={{ whiteSpace: "normal" }}>{c.nome}</td>
-                    <td>{fmt(c.media)}</td>
+                    <td className="col-num">
+                      <span className="media-barra">
+                        <span className="media-trilho" aria-hidden="true">
+                          <span
+                            className="media-preenche"
+                            style={{ width: `${((c.media ?? 0) / 5) * 100}%` }}
+                          />
+                        </span>
+                        {fmt(c.media)}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -73,31 +115,70 @@ export function DashboardPage() {
         </section>
       </div>
 
-      <h2 style={{ marginTop: 24 }}>Acompanhamento (PDI)</h2>
-      <div className="grade-cartoes">
-        <Metrica valor={dados.pdiAbertas} rotulo="Ações abertas" />
-        <Metrica valor={dados.pdiAtrasadas} rotulo="Ações atrasadas" alerta={dados.pdiAtrasadas > 0} />
-        <Metrica valor={dados.pdiConcluidas} rotulo="Ações concluídas" />
+      <div className="secao-topo">
+        <h2>Acompanhamento (PDI)</h2>
+        <Link className="link-acao" to="/pdi">
+          Ver PDI <Icone nome="direita" />
+        </Link>
+      </div>
+      <div className="grade-cartoes grade-cartoes-3">
+        <Metrica
+          valor={dados.pdiAbertas}
+          rotulo="Ações abertas"
+          icone="prancheta"
+          para="/pdi?filtro=ABERTAS"
+        />
+        <Metrica
+          valor={dados.pdiAtrasadas}
+          rotulo="Ações atrasadas"
+          contexto={dados.pdiAtrasadas > 0 ? "prazo vencido, ainda não concluídas" : "nenhuma com prazo vencido"}
+          icone="aviso"
+          alerta={dados.pdiAtrasadas > 0}
+          para="/pdi?filtro=ATRASADAS"
+        />
+        <Metrica
+          valor={dados.pdiConcluidas}
+          rotulo="Ações concluídas"
+          icone="sucesso"
+          para="/pdi?filtro=CONCLUIDAS"
+        />
       </div>
     </>
   );
 }
 
+/** Cartão de indicador; com `para`, o cartão inteiro leva à lista que explica o número. */
 function Metrica({
   valor,
   rotulo,
+  contexto,
+  icone,
   alerta,
+  para,
 }: {
   valor: number | string;
   rotulo: string;
+  contexto?: string;
+  icone: NomeIcone;
   alerta?: boolean;
+  para?: string;
 }) {
-  return (
-    <div className="cartao cartao-metrica">
-      <div className="valor" style={alerta ? { color: "var(--cor-critico)" } : undefined}>
-        {valor}
+  const conteudo = (
+    <>
+      <div className="metrica-cabeca">
+        <span className="rotulo">{rotulo}</span>
+        <Icone nome={icone} className="metrica-icone" />
       </div>
-      <div className="rotulo">{rotulo}</div>
-    </div>
+      <div className="valor">{valor}</div>
+      {contexto && <div className="contexto">{contexto}</div>}
+    </>
+  );
+  const classe = `cartao cartao-metrica${alerta ? " metrica-alerta" : ""}`;
+  return para ? (
+    <Link className={`${classe} metrica-link`} to={para}>
+      {conteudo}
+    </Link>
+  ) : (
+    <div className={classe}>{conteudo}</div>
   );
 }

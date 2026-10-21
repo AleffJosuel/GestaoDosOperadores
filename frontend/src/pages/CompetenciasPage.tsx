@@ -7,6 +7,28 @@ import { ImportModal } from "../components/ImportModal";
 import { useToast } from "../components/Toasts";
 import { useConfirm } from "../components/Confirm";
 import type { Competencia, CompetenciaInput, TipoCompetencia } from "../api/types";
+import { Icone } from "../components/Icone";
+import { CampoBusca } from "../components/CampoBusca";
+import { ThOrdenavel, useOrdenacao } from "../components/Ordenacao";
+
+const TIPO_LABEL: Record<TipoCompetencia, string> = {
+  COMPORTAMENTAL: "Comportamental",
+  TECNICA: "Técnica",
+};
+
+type ColunaOrdem = "nome" | "tipo" | "nivel" | "situacao";
+const COLUNAS: [ColunaOrdem, string, string?][] = [
+  ["nome", "Nome"],
+  ["tipo", "Tipo"],
+  ["nivel", "Nível esperado", "col-num"],
+  ["situacao", "Situação"],
+];
+const VALOR_COLUNA: Record<ColunaOrdem, (c: Competencia) => string | number> = {
+  nome: (c) => c.nome,
+  tipo: (c) => TIPO_LABEL[c.tipo],
+  nivel: (c) => c.nivelEsperado,
+  situacao: (c) => (c.ativa ? "Ativa" : "Inativa"),
+};
 
 export function CompetenciasPage() {
   const toast = useToast();
@@ -27,6 +49,7 @@ export function CompetenciasPage() {
     if (!termo) return lista.dados ?? [];
     return (lista.dados ?? []).filter((c) => c.nome.toLowerCase().includes(termo));
   }, [lista.dados, busca]);
+  const ordem = useOrdenacao(filtradas, VALOR_COLUNA, "nome");
 
   async function alterarAtiva(c: Competencia) {
     if (c.ativa) {
@@ -57,21 +80,22 @@ export function CompetenciasPage() {
         </div>
         <div className="linha-acoes">
           <button className="btn btn-sutil" onClick={() => setImportando(true)}>
+            <Icone nome="enviar" />
             Importar CSV
           </button>
           <button className="btn btn-primario" onClick={() => setCriando(true)}>
+            <Icone nome="mais" />
             Nova competência
           </button>
         </div>
       </div>
 
       <div className="toolbar">
-        <input
-          className="busca"
-          type="search"
-          placeholder="Buscar competência…"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
+        <CampoBusca
+          valor={busca}
+          onMudar={setBusca}
+          rotulo="Buscar competência"
+          placeholder="Nome da competência…"
         />
         <label className="check-inline">
           <input
@@ -88,54 +112,95 @@ export function CompetenciasPage() {
       ) : lista.erro ? (
         <ErroBox mensagem={lista.erro} onTentar={lista.recarregar} />
       ) : !lista.dados || lista.dados.length === 0 ? (
-        <Vazio texto="Nenhuma competência cadastrada ainda." />
+        <Vazio
+          texto={
+            incluirInativas
+              ? "Nenhuma competência cadastrada ainda."
+              : "Nenhuma competência ativa. Cadastre uma ou marque “Mostrar inativas”."
+          }
+          acao={
+            <button className="btn btn-primario" onClick={() => setCriando(true)}>
+              <Icone nome="mais" />
+              Nova competência
+            </button>
+          }
+        />
       ) : filtradas.length === 0 ? (
-        <Vazio texto="Nenhuma competência corresponde à busca." />
+        <Vazio
+          texto={`Nenhuma competência corresponde a “${busca.trim()}”.`}
+          acao={
+            <button className="btn btn-sutil" onClick={() => setBusca("")}>
+              Limpar busca
+            </button>
+          }
+        />
       ) : (
-        <div className="tabela-wrap cartao">
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Tipo</th>
-                <th>Nível esperado</th>
-                <th>Situação</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtradas.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ whiteSpace: "normal" }}>{c.nome}</td>
-                  <td>
-                    <span className="selo selo-tipo">
-                      {c.tipo === "COMPORTAMENTAL" ? "Comportamental" : "Técnica"}
-                    </span>
-                  </td>
-                  <td>{c.nivelEsperado}</td>
-                  <td>
-                    <span className={`selo ${c.ativa ? "selo-ativo" : "selo-inativo"}`}>
-                      {c.ativa ? "Ativa" : "Inativa"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="linha-acoes">
-                      <button className="btn btn-sm btn-sutil" onClick={() => setEdicao(c)}>
-                        Editar
-                      </button>
-                      <button
-                        className={`btn btn-sm ${c.ativa ? "btn-perigo" : "btn-sutil"}`}
-                        onClick={() => alterarAtiva(c)}
-                      >
-                        {c.ativa ? "Desativar" : "Reativar"}
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <p className="contagem" aria-live="polite">
+            {filtradas.length === lista.dados.length
+              ? `${lista.dados.length} competência(s)`
+              : `${filtradas.length} de ${lista.dados.length} competência(s)`}
+          </p>
+          <div className="tabela-wrap cartao">
+            <table className="tabela">
+              <thead>
+                <tr>
+                  {COLUNAS.map(([chave, rotulo, classe]) => (
+                    <ThOrdenavel
+                      key={chave}
+                      rotulo={rotulo}
+                      className={classe}
+                      ativo={ordem.chave === chave}
+                      dir={ordem.dir}
+                      onOrdenar={() => ordem.alternar(chave)}
+                    />
+                  ))}
+                  <th className="col-acoes">
+                    <span className="sr-only">Ações</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {ordem.ordenados.map((c) => (
+                  <tr key={c.id}>
+                    <td style={{ whiteSpace: "normal" }}>
+                      <strong className="celula-titulo">{c.nome}</strong>
+                      {c.descricao && <div className="celula-sub">{c.descricao}</div>}
+                    </td>
+                    <td>
+                      <span className="selo selo-tipo">{TIPO_LABEL[c.tipo]}</span>
+                    </td>
+                    <td className="col-num">{c.nivelEsperado}</td>
+                    <td>
+                      <span className={`selo ${c.ativa ? "selo-ativo" : "selo-inativo"}`}>
+                        {c.ativa ? "Ativa" : "Inativa"}
+                      </span>
+                    </td>
+                    <td className="col-acoes">
+                      <div className="linha-acoes acoes-tabela">
+                        <button
+                          className="btn btn-sm btn-sutil"
+                          onClick={() => setEdicao(c)}
+                          aria-label={`Editar ${c.nome}`}
+                        >
+                          <Icone nome="editar" />
+                          Editar
+                        </button>
+                        <button
+                          className={`btn btn-sm ${c.ativa ? "btn-perigo" : "btn-sutil"}`}
+                          onClick={() => alterarAtiva(c)}
+                          aria-label={`${c.ativa ? "Desativar" : "Reativar"} ${c.nome}`}
+                        >
+                          {c.ativa ? "Desativar" : "Reativar"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {(criando || edicao) && (

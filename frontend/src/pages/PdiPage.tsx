@@ -1,10 +1,11 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
 import { AvisoBox, Carregando, ErroBox, Vazio } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
+import { Icone } from "../components/Icone";
 import type { AcaoPdi, PdiInput, PdiItem, StatusPdi } from "../api/types";
 import { hoje } from "../datas";
 
@@ -18,6 +19,7 @@ const STATUS_ORDEM: StatusPdi[] = ["NAO_INICIADO", "PLANEJADO", "EM_ANDAMENTO", 
 const fmtData = (d: string | null) => (d ? d.split("-").reverse().join("/") : "—");
 
 type Filtro = "ABERTAS" | "ATRASADAS" | "CONCLUIDAS" | "TODAS";
+const FILTROS: Filtro[] = ["ABERTAS", "ATRASADAS", "CONCLUIDAS", "TODAS"];
 
 const aberta = (a: PdiItem) => a.status !== "CONCLUIDO";
 const atrasada = (a: PdiItem) => aberta(a) && !!a.prazo && a.prazo < hoje();
@@ -44,7 +46,15 @@ export function PdiPage() {
   // exibido nas ações antigas que apontam para ela.
   const competencias = useRequisicao(() => api.listarCompetencias(true), []);
   const [colaboradorId, setColaboradorId] = useState<number | null>(null);
-  const [filtro, setFiltro] = useState<Filtro>("ABERTAS");
+  // Filtro na URL (?filtro=ATRASADAS): o dashboard linka direto e o "voltar" do navegador o preserva.
+  const [params, setParams] = useSearchParams();
+  const doParam = params.get("filtro") as Filtro | null;
+  const filtro: Filtro = doParam && FILTROS.includes(doParam) ? doParam : "ABERTAS";
+  function setFiltro(f: Filtro) {
+    const p = new URLSearchParams(params);
+    p.set("filtro", f);
+    setParams(p, { replace: true });
+  }
   const [criando, setCriando] = useState(false);
   const [edicao, setEdicao] = useState<PdiItem | null>(null);
 
@@ -98,6 +108,7 @@ export function PdiPage() {
         </div>
         {colaboradorId ? (
           <button className="btn btn-primario" onClick={() => setCriando(true)}>
+            <Icone nome="mais" />
             Nova ação
           </button>
         ) : (
@@ -105,10 +116,12 @@ export function PdiPage() {
         )}
       </div>
 
-      <div className="pdi-resumo">
+      <div className="pdi-resumo" role="group" aria-label="Filtrar ações por situação">
         {chips.map((c) => (
           <button
             key={c.id}
+            type="button"
+            aria-pressed={filtro === c.id}
             className={`pdi-chip ${filtro === c.id ? "pdi-chip-ativo" : ""} ${
               c.id === "ATRASADAS" && c.valor ? "pdi-chip-alerta" : ""
             }`}
@@ -174,7 +187,9 @@ export function PdiPage() {
                 return (
                   <tr key={a.id} className={vencido ? "linha-alerta" : undefined}>
                     <td style={{ whiteSpace: "normal" }}>
-                      <Link to={`/ficha/${a.colaboradorId}`}>{a.colaboradorNome}</Link>
+                      <Link className="link-linha" to={`/ficha/${a.colaboradorId}`}>
+                        {a.colaboradorNome}
+                      </Link>
                     </td>
                     <td style={{ whiteSpace: "normal" }}>
                       {mapaCompetencias.get(a.competenciaId) ?? `#${a.competenciaId}`}
@@ -182,14 +197,22 @@ export function PdiPage() {
                     <td style={{ whiteSpace: "normal", maxWidth: 280 }}>{a.descricao}</td>
                     <td>{a.responsavel ?? "—"}</td>
                     <td className={vencido ? "prazo-vencido" : undefined}>
-                      {fmtData(a.prazo)}
-                      {vencido ? " ⚠" : ""}
+                      <span className="prazo">
+                        {vencido && <Icone nome="aviso" />}
+                        {fmtData(a.prazo)}
+                        {vencido && <span className="sr-only"> (atrasada)</span>}
+                      </span>
                     </td>
                     <td>
                       <span className={`status status-${a.status}`}>{STATUS_LABEL[a.status]}</span>
                     </td>
-                    <td>
-                      <button className="btn btn-sm btn-sutil" onClick={() => setEdicao(a)}>
+                    <td className="col-acoes">
+                      <button
+                        className="btn btn-sm btn-sutil"
+                        onClick={() => setEdicao(a)}
+                        aria-label={`Editar ação de ${a.colaboradorNome}: ${a.descricao}`}
+                      >
+                        <Icone nome="editar" />
                         Editar
                       </button>
                     </td>
