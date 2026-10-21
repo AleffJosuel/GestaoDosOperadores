@@ -190,11 +190,32 @@ Requisitos: Node 18+ (testado no 24). Com o backend no ar em `http://localhost:8
     npm run dev               # abre em http://localhost:5173
 
 Para gerar o pacote de produção: `npm run build` (saída em `frontend/dist/`).
-O CORS do backend libera a origem `http://localhost:5173`.
+Para servi-lo localmente: `npm run preview` (também na porta 5173, já com os cabeçalhos de
+segurança abaixo). O CORS do backend libera a origem `http://localhost:5173`.
 
 Testes do front (Vitest): `npm test` (ou `npm run test:watch`). Rodam com
 `TZ=America/Sao_Paulo` fixado no `vite.config.ts`, porque as regras de data são em
 horário local — ver `src/datas.ts`.
+
+Lint: `npm run lint` (ESLint com regras de React Hooks e de acessibilidade `jsx-a11y`).
+
+### Cabeçalhos de segurança em produção
+
+O `npm run preview` já envia estes cabeçalhos (definidos em `frontend/vite.config.ts`).
+Quem hospedar o `dist/` em outro servidor (nginx, IIS, CDN…) deve configurar os mesmos,
+trocando `https://api.exemplo.com` pela origem real da API (`VITE_API_URL`):
+
+    Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';
+      font-src 'self'; connect-src 'self' https://api.exemplo.com; object-src 'none';
+      base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+    X-Content-Type-Options: nosniff
+    X-Frame-Options: DENY
+    Referrer-Policy: no-referrer
+    Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+O build não tem script nem estilo inline, por isso a CSP não precisa de `'unsafe-inline'`.
+Esses cabeçalhos não valem no `npm run dev`: o recarregamento do Vite precisa de script
+inline e WebSocket.
 
 O token JWT é guardado em `sessionStorage` (sai ao fechar a aba). É uma escolha de
 desenvolvimento: um token nesse local fica exposto a XSS. Para produção, migrar para
