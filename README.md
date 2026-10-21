@@ -182,7 +182,7 @@ importação CSV, configurações e troca de senha). As cores ficam todas em
 `frontend/src/theme.css` — paleta extraída da logo oficial do cliente
 (vermelho `#cf242a` + preto + branco).
 
-Requisitos: Node 18+ (testado no 24). Com o backend no ar em `http://localhost:8080`:
+Requisitos: Node 20+ (testado no 24). Com o backend no ar em `http://localhost:8080`:
 
     cd frontend
     cp .env.example .env      # ajuste VITE_API_URL se o backend não estiver em :8080
