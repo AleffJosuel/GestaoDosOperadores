@@ -249,9 +249,7 @@ function ColaboradorForm({
     <Modal titulo={editando ? "Editar colaborador" : "Novo colaborador"} onFechar={onFechar}>
       <form onSubmit={aoEnviar}>
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
         <div className="campo">
           <label htmlFor="mat">Matrícula</label>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
+import { AvisoBox, ErroBox } from "../components/estados";
 
 export function LoginPage() {
   const { entrar, motivoSaida } = useAuth();
@@ -37,15 +38,9 @@ export function LoginPage() {
         </p>
 
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
-        {!erro && motivoSaida && (
-          <div className="estado-aviso" role="status">
-            {motivoSaida}
-          </div>
-        )}
+        {!erro && motivoSaida && <AvisoBox>{motivoSaida}</AvisoBox>}
 
         <div className="campo">
           <label htmlFor="email">E-mail</label>

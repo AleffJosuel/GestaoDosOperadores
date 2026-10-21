@@ -229,9 +229,7 @@ function RegistroForm({
     <Modal titulo="Novo registro de acompanhamento" onFechar={onFechar}>
       <form onSubmit={aoEnviar}>
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
         <div className="campo">
           <label htmlFor="tipo-reg">Tipo</label>

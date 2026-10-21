@@ -71,9 +71,7 @@ export function ConfiguracoesPage() {
 
       <form onSubmit={aoEnviar}>
         {erroForm && (
-          <div className="estado-erro" role="alert">
-            {erroForm}
-          </div>
+          <ErroBox mensagem={erroForm} />
         )}
 
         <section className="cartao ficha-secao">

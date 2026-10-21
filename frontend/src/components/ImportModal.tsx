@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Modal } from "./Modal";
+import { ErroBox } from "./estados";
 import { ApiError } from "../api/client";
 import type { ImportacaoResultado } from "../api/types";
 
@@ -96,9 +97,7 @@ export function ImportModal({ titulo, modelo, enviar, onFechar, onImportado }: P
           </div>
 
           {erro && (
-            <div className="estado-erro" role="alert">
-              {erro}
-            </div>
+            <ErroBox mensagem={erro} />
           )}
 
           <div className="modal-acoes">

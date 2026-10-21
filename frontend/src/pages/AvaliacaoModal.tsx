@@ -65,9 +65,7 @@ export function AvaliacaoModal({
     <Modal titulo={`Avaliar — ${colaboradorNome}`} onFechar={onFechar}>
       <form onSubmit={aoEnviar}>
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
 
         <div className="campo">

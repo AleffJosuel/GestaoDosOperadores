@@ -227,9 +227,7 @@ function CompetenciaForm({
     <Modal titulo={editando ? "Editar competência" : "Nova competência"} onFechar={onFechar}>
       <form onSubmit={aoEnviar}>
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
         <div className="campo">
           <label htmlFor="nome">Nome</label>

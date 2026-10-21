@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../api/client";
 import { Modal } from "./Modal";
+import { ErroBox, SucessoBox } from "./estados";
 
 const MIN_SENHA = 12;
 
@@ -38,9 +39,7 @@ export function TrocarSenhaModal({ onFechar }: { onFechar: () => void }) {
     <Modal titulo="Trocar senha" onFechar={onFechar}>
       {ok ? (
         <>
-          <div className="estado-erro" role="status" style={{ background: "var(--cor-bom-suave)", color: "var(--cor-bom)" }}>
-            Senha alterada com sucesso.
-          </div>
+          <SucessoBox>Senha alterada com sucesso.</SucessoBox>
           <div className="modal-acoes">
             <button className="btn btn-primario" onClick={onFechar}>
               Fechar
@@ -50,9 +49,7 @@ export function TrocarSenhaModal({ onFechar }: { onFechar: () => void }) {
       ) : (
         <form onSubmit={aoEnviar}>
           {erro && (
-            <div className="estado-erro" role="alert">
-              {erro}
-            </div>
+            <ErroBox mensagem={erro} />
           )}
           <div className="campo">
             <label htmlFor="atual">Senha atual</label>

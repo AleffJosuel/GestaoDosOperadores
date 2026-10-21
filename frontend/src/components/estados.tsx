@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import type { ClassificacaoDto } from "../api/types";
+import { Icone } from "./Icone";
 
 export function Carregando({ texto = "Carregando…" }: { texto?: string }) {
   return (
@@ -9,22 +11,45 @@ export function Carregando({ texto = "Carregando…" }: { texto?: string }) {
   );
 }
 
-export function Vazio({ texto }: { texto: string }) {
-  return <div className="estado">{texto}</div>;
+/** Estado vazio; `acao` (opcional) é o próximo passo real, ex.: botão de cadastrar. */
+export function Vazio({ texto, acao }: { texto: string; acao?: ReactNode }) {
+  return (
+    <div className="estado estado-vazio">
+      <Icone nome="vazio" className="estado-icone" />
+      <span>{texto}</span>
+      {acao}
+    </div>
+  );
 }
 
 export function ErroBox({ mensagem, onTentar }: { mensagem: string; onTentar?: () => void }) {
   return (
     <div className="estado-erro" role="alert">
-      {mensagem}
+      <Icone nome="erro" />
+      <span>{mensagem}</span>
       {onTentar && (
-        <>
-          {" "}
-          <button className="btn btn-sm btn-sutil" onClick={onTentar}>
-            Tentar de novo
-          </button>
-        </>
+        <button type="button" className="btn btn-sm btn-sutil" onClick={onTentar}>
+          Tentar de novo
+        </button>
       )}
+    </div>
+  );
+}
+
+export function AvisoBox({ children }: { children: ReactNode }) {
+  return (
+    <div className="estado-aviso" role="status">
+      <Icone nome="aviso" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+export function SucessoBox({ children }: { children: ReactNode }) {
+  return (
+    <div className="estado-sucesso" role="status">
+      <Icone nome="sucesso" />
+      <span>{children}</span>
     </div>
   );
 }

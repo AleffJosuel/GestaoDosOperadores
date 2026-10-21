@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { useRequisicao } from "../hooks/useRequisicao";
-import { Carregando, ErroBox, Vazio } from "../components/estados";
+import { AvisoBox, Carregando, ErroBox, Vazio } from "../components/estados";
 import { Modal } from "../components/Modal";
 import { useToast } from "../components/Toasts";
 import type { AcaoPdi, PdiInput, PdiItem, StatusPdi } from "../api/types";
@@ -301,9 +301,7 @@ function PdiForm({
     <Modal titulo={editando ? "Editar ação de PDI" : "Nova ação de PDI"} onFechar={onFechar}>
       <form onSubmit={aoEnviar}>
         {erro && (
-          <div className="estado-erro" role="alert">
-            {erro}
-          </div>
+          <ErroBox mensagem={erro} />
         )}
 
         {editando ? (
@@ -319,9 +317,9 @@ function PdiForm({
         ) : avaliacoes.erro ? (
           <ErroBox mensagem={avaliacoes.erro} onTentar={avaliacoes.recarregar} />
         ) : (avaliacoes.dados ?? []).length === 0 ? (
-          <div className="estado-erro" role="alert">
+          <AvisoBox>
             Este colaborador não tem avaliações. Registre uma avaliação antes de criar o PDI.
-          </div>
+          </AvisoBox>
         ) : (
           <>
             <div className="campo">

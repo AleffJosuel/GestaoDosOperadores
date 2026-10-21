@@ -799,30 +799,50 @@ table.mapa thead th.col-nome {
 .modal-fundo {
   position: fixed;
   inset: 0;
-  background: rgba(43, 38, 34, 0.45);
+  background: rgba(26, 26, 26, 0.5);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 40px 16px;
+  padding: 48px 16px;
   overflow-y: auto;
   z-index: 50;
+  animation: esmaecer 0.15s ease-out;
 }
 .modal {
   background: var(--cor-superficie);
   border-radius: var(--raio);
   box-shadow: var(--sombra-forte);
   width: 100%;
-  max-width: 520px;
-  padding: 22px;
+  max-width: 540px;
+  padding: var(--esp-5);
+  animation: surgir 0.18s ease-out;
 }
-.modal h2 {
-  margin-top: 0;
+.modal:focus {
+  outline: none;
+}
+.modal-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-2)) var(--esp-4) 0;
+}
+.modal-cabecalho h2 {
+  margin: var(--esp-2) 0 0;
 }
 .modal-acoes {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: var(--esp-5);
+  padding-top: var(--esp-4);
+  border-top: 1px solid var(--cor-borda);
+}
+@keyframes esmaecer {
+  from {
+    opacity: 0;
+  }
 }
 
 /* ---- Login ---- */
@@ -909,26 +929,61 @@ table.mapa thead th.col-nome {
   position: fixed;
   bottom: 20px;
   right: 20px;
+  left: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
   z-index: 80;
-  max-width: 340px;
+  width: min(380px, calc(100vw - 32px));
+}
+.toasts-regiao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toasts-regiao:empty {
+  display: none;
 }
 .toast {
-  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 10px 12px 14px;
   border-radius: var(--raio-sm);
   color: var(--cor-texto-inverso);
   box-shadow: var(--sombra-forte);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
   animation: surgir 0.18s ease-out;
+}
+.toast > .icone {
+  margin-top: 1px;
+}
+.toast-texto {
+  flex: 1;
+}
+.toast-fechar {
+  display: inline-flex;
+  padding: 2px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.toast-fechar:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.toast-fechar:focus-visible {
+  outline-color: var(--cor-texto-inverso);
 }
 .toast-sucesso {
   background: var(--cor-sucesso);
 }
 .toast-erro {
-  background: var(--cor-critico);
+  background: var(--cor-critico-texto);
 }
 @keyframes surgir {
   from {
