@@ -194,7 +194,7 @@ export function PdiPage() {
                     <td style={{ whiteSpace: "normal" }}>
                       {mapaCompetencias.get(a.competenciaId) ?? `#${a.competenciaId}`}
                     </td>
-                    <td style={{ whiteSpace: "normal", maxWidth: 280 }}>{a.descricao}</td>
+                    <td style={{ whiteSpace: "normal", minWidth: 200, maxWidth: 280 }}>{a.descricao}</td>
                     <td>{a.responsavel ?? "—"}</td>
                     <td className={vencido ? "prazo-vencido" : undefined}>
                       <span className="prazo">

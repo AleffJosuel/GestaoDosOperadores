@@ -24,7 +24,8 @@
   --cor-borda: #e2e2e6;
   --cor-borda-forte: #c9c9d0;
   --cor-texto: #1a1a1a;
-  --cor-texto-suave: #5f5f66;
+  --cor-texto-suave: #5f5f66;      /* sobre superfícies claras (cartões): 6,3:1 */
+  --cor-texto-sobre-fundo: #3d3d42; /* texto secundário direto sobre o degradê: 5,0:1 no ponto mais vermelho */
   --cor-texto-inverso: #ffffff;
 
   /* Faixas de classificação (também sinalizadas por número/rótulo, não só cor) */

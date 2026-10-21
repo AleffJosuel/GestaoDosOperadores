@@ -442,7 +442,15 @@ h3 {
 }
 .topo p {
   margin: 4px 0 0;
-  color: var(--cor-texto-suave);
+  color: var(--cor-texto-sobre-fundo);
+}
+/* Textos soltos sobre o degradê (fora de cartão): o cinza suave não tem contraste ali. */
+.conteudo-interno > .contagem,
+.conteudo-interno > .legenda,
+.conteudo-interno > .toolbar .check-inline,
+.conteudo-interno > .topo .pdi-dica-nova,
+.conteudo-interno > .estado:not(.estado-vazio) {
+  color: var(--cor-texto-sobre-fundo);
 }
 
 /* ---- Tabelas ---- */
@@ -1385,12 +1393,17 @@ table.mapa thead th.col-nome {
 }
 .ficha-secao-topo {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0 12px;
 }
 .ficha-secao-topo h2 {
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.ficha-secao-topo > .btn {
+  margin-bottom: var(--esp-3);
 }
 .ficha-dados {
   display: grid;
