@@ -1377,6 +1377,9 @@ table.mapa thead th.col-nome {
   color: var(--cor-texto-suave);
   max-width: 420px;
 }
+.celula-rotulo {
+  font-weight: 600;
+}
 .prazo {
   display: inline-flex;
   align-items: center;

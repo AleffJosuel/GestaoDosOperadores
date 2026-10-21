@@ -167,6 +167,11 @@ export function CompetenciasPage() {
                     <td style={{ whiteSpace: "normal" }}>
                       <strong className="celula-titulo">{c.nome}</strong>
                       {c.descricao && <div className="celula-sub">{c.descricao}</div>}
+                      {c.criterio && (
+                        <div className="celula-sub">
+                          <span className="celula-rotulo">Critério:</span> {c.criterio}
+                        </div>
+                      )}
                     </td>
                     <td>
                       <span className="selo selo-tipo">{TIPO_LABEL[c.tipo]}</span>
@@ -356,6 +361,21 @@ function CompetenciaForm({
               {...ariaErro(campos, "descricao", "desc")}
             />
             <ErroCampo erros={campos} nome="descricao" id="desc" />
+          </div>
+          <div className="campo campo-largo">
+            <label htmlFor="crit">Critério de avaliação</label>
+            <textarea
+              id="crit"
+              rows={2}
+              value={form.criterio ?? ""}
+              onChange={(e) => set("criterio", e.target.value)}
+              aria-describedby={campos.criterio ? "crit-erro" : "crit-ajuda"}
+              aria-invalid={campos.criterio ? true : undefined}
+            />
+            <span id="crit-ajuda" className="ajuda-campo">
+              O que o avaliador observa para dar a nota (ex.: “Transmite ideias com objetividade”).
+            </span>
+            <ErroCampo erros={campos} nome="criterio" id="crit" />
           </div>
           <div className="campo campo-largo">
             <label htmlFor="acao">Ação padrão de desenvolvimento</label>
