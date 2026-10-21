@@ -30,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,13 +43,36 @@ public class SecurityConfig {
 
     private static final int TAMANHO_MINIMO_SEGREDO = 32; // HS256 exige chave de 256 bits
     private final SecretKey chave;
+    private final List<String> origensPermitidas;
 
-    public SecurityConfig(@Value("${app.jwt.secret}") String segredo) {
+    public SecurityConfig(@Value("${app.jwt.secret}") String segredo,
+                          @Value("${app.cors.origens}") String origens) {
         if (segredo == null || segredo.getBytes(StandardCharsets.UTF_8).length < TAMANHO_MINIMO_SEGREDO) {
             throw new IllegalStateException(
                 "Defina JWT_SECRET com ao menos " + TAMANHO_MINIMO_SEGREDO + " caracteres.");
         }
         this.chave = new SecretKeySpec(segredo.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        this.origensPermitidas = separarOrigens(origens);
+    }
+
+    /**
+     * Origens do front liberadas no CORS, separadas por vírgula (CORS_ORIGENS).
+     * Nunca aceita {@code *}: com credencial no cabeçalho, curinga permitiria que
+     * qualquer site chamasse a API em nome de quem estivesse logado.
+     */
+    private static List<String> separarOrigens(String origens) {
+        List<String> lista = Arrays.stream(origens == null ? new String[0] : origens.split(","))
+            .map(String::trim)
+            .filter(o -> !o.isEmpty())
+            .toList();
+        if (lista.isEmpty()) {
+            throw new IllegalStateException(
+                "Defina CORS_ORIGENS com a origem do front (ex.: https://seu-app.vercel.app).");
+        }
+        if (lista.contains("*")) {
+            throw new IllegalStateException("CORS_ORIGENS não pode ser '*': informe as origens exatas.");
+        }
+        return lista;
     }
 
     @Bean
@@ -110,7 +134,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:5173")); // front em desenvolvimento (Vite)
+        // Dev: http://localhost:5173. Produção: o domínio do front (ex.: Vercel), via CORS_ORIGENS.
+        cfg.setAllowedOrigins(origensPermitidas);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

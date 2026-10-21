@@ -220,3 +220,38 @@ inline e WebSocket.
 O token JWT é guardado em `sessionStorage` (sai ao fechar a aba). É uma escolha de
 desenvolvimento: um token nesse local fica exposto a XSS. Para produção, migrar para
 cookie `HttpOnly` + proteção CSRF.
+
+## Publicando
+
+O front é estático e vai bem na Vercel; o back-end é um JAR de processo longo com
+PostgreSQL, então precisa de um serviço que rode container (Railway, Render, Fly.io) e de
+um Postgres gerenciado (Neon, Supabase ou o add-on do próprio serviço). A Vercel não roda
+Java, e o Firebase não substitui o Postgres: o schema depende de `UNIQUE`, `CHECK`,
+`ON CONFLICT`, índice parcial e migrations do Flyway.
+
+**Back-end.** Variáveis de ambiente obrigatórias no serviço escolhido:
+
+| Variável | Observação |
+|---|---|
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | do Postgres gerenciado |
+| `JWT_SECRET` | **novo**, 32+ caracteres; nunca o de desenvolvimento |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | conta inicial; senha com 12+ caracteres |
+| `CORS_ORIGENS` | domínio do front, ex.: `https://seu-app.vercel.app` |
+
+`CORS_ORIGENS` aceita vários domínios separados por vírgula e recusa `*` — com a credencial
+indo no cabeçalho, curinga deixaria qualquer site chamar a API em nome de quem está logado.
+O Flyway cria o schema na primeira subida.
+
+**Front-end (Vercel).** Em *Settings → General*, defina **Root Directory** como `frontend`;
+o `vercel.json` ali já traz o fallback de SPA (sem ele, recarregar `/mapa` dá 404), os
+cabeçalhos de segurança e o cache dos assets com hash. Em *Settings → Environment Variables*,
+defina `VITE_API_URL` com a URL pública do back-end.
+
+Falta um passo manual: `vercel.json` é lido pela Vercel **antes** do build, então não aceita
+variável de ambiente. Troque `https://SUA-API.exemplo.com` pelo endereço real da API, na
+diretiva `connect-src` da CSP. O `npm run build` confere isso (`scripts/checar-vercel.mjs`) e
+falha avisando se o endereço de exemplo continuar lá ou não bater com `VITE_API_URL` — a
+checagem é pulada quando a API é local.
+
+Antes de publicar com dados reais, confirme com a empresa se as avaliações podem sair para
+um provedor externo: são dados pessoais de desempenho, sujeitos à LGPD.
