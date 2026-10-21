@@ -329,8 +329,9 @@ function PdiForm({
 
         {editando ? (
           <div className="campo">
-            <label>Competência (da avaliação de origem)</label>
+            <label htmlFor="comp-origem">Competência (da avaliação de origem)</label>
             <input
+              id="comp-origem"
               value={mapaCompetencias.get(acao!.competenciaId) ?? `#${acao!.competenciaId}`}
               disabled
             />

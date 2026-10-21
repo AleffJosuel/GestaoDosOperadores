@@ -78,7 +78,14 @@ export function Modal({ titulo, children, onFechar }: Props) {
   }, [anterior]);
 
   return (
-    <div className="modal-fundo" onMouseDown={() => fechar.current()}>
+    // Clique fora é só atalho de mouse; pelo teclado o mesmo se faz com Esc ou o botão Fechar.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      className="modal-fundo"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) fechar.current();
+      }}
+    >
       <div
         ref={caixa}
         className="modal cartao"
@@ -86,7 +93,6 @@ export function Modal({ titulo, children, onFechar }: Props) {
         aria-modal="true"
         aria-labelledby={idTitulo}
         tabIndex={-1}
-        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="modal-cabecalho">
           <h2 id={idTitulo}>{titulo}</h2>
