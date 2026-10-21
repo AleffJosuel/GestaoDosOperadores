@@ -229,15 +229,40 @@ h3 {
   display: flex;
   min-height: 100vh;
 }
+.pular-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: var(--raio-sm);
+  background: var(--cor-acento);
+  color: var(--cor-texto-inverso);
+  font-weight: 600;
+  text-decoration: none;
+}
+.pular-link:focus {
+  top: 12px;
+  color: var(--cor-texto-inverso);
+}
 .barra-lateral {
-  width: 230px;
+  width: var(--largura-sidebar);
   flex-shrink: 0;
   background: var(--cor-superficie);
   border-right: 1px solid var(--cor-borda);
-  padding: 20px 14px;
+  padding: 20px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  /* Fica parada enquanto o conteúdo rola. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.topo-movel,
+.menu-fundo {
+  display: none;
 }
 .marca {
   display: flex;
@@ -264,42 +289,137 @@ h3 {
   font-size: 1.05rem;
   line-height: 1.15;
 }
+.nav-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--esp-3);
+}
+.nav-grupo-titulo {
+  padding: 4px 12px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cor-texto-suave);
+}
 .nav-link {
-  display: block;
-  padding: 9px 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
   border-radius: var(--raio-sm);
+  background: transparent;
   color: var(--cor-texto);
-  text-decoration: none;
+  font: inherit;
+  font-size: var(--fs-sm);
   font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--transicao), color var(--transicao);
+}
+.nav-link .icone {
+  color: var(--cor-texto-suave);
+  transition: color var(--transicao);
 }
 .nav-link:hover {
   background: var(--cor-superficie-2);
+  color: var(--cor-texto);
 }
 .nav-link.ativo {
   background: var(--cor-primaria-suave);
   color: var(--cor-primaria-escura);
 }
+.nav-link.ativo .icone {
+  color: var(--cor-primaria);
+}
+/* Marcador lateral do item atual (reforça a cor de fundo). */
+.nav-link.ativo::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cor-primaria);
+}
 .barra-lateral .rodape {
   margin-top: auto;
-  font-size: 0.82rem;
+  padding-top: var(--esp-3);
+  border-top: 1px solid var(--cor-borda);
+}
+.conta-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 8px;
+  min-width: 0;
+}
+.conta-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--cor-acento);
+  color: var(--cor-texto-inverso);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+.conta-dados {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.conta-papel {
+  font-size: var(--fs-xs);
   color: var(--cor-texto-suave);
+}
+.conta-email {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conta-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .conteudo {
   flex: 1;
   min-width: 0;
-  padding: 24px;
+  padding: 28px 32px 48px;
+}
+.conteudo:focus {
+  outline: none;
+}
+.conteudo-interno {
   max-width: var(--largura-max);
+  margin: 0 auto;
 }
 .topo {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: var(--esp-5);
   flex-wrap: wrap;
 }
+.topo h1 {
+  margin: 0;
+}
 .topo p {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   color: var(--cor-texto-suave);
 }
 
@@ -1043,6 +1163,9 @@ table.mapa thead th.col-nome {
 /* ---- Impressão: só a ficha, em preto no branco ---- */
 @media print {
   .barra-lateral,
+  .topo-movel,
+  .menu-fundo,
+  .pular-link,
   .topo .linha-acoes,
   .no-print {
     display: none !important;
@@ -1076,6 +1199,7 @@ table.mapa thead th.col-nome {
   }
 }
 
+/* Tablet e celular: barra superior + barra lateral como painel deslizante. */
 @media (max-width: 860px) {
   .painel-duplo {
     grid-template-columns: 1fr;
@@ -1083,19 +1207,98 @@ table.mapa thead th.col-nome {
   .app {
     flex-direction: column;
   }
-  .barra-lateral {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
+  .topo-movel {
+    display: flex;
     align-items: center;
-    border-right: none;
+    gap: var(--esp-2);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: var(--altura-topo-movel);
+    padding: 0 var(--esp-3);
+    background: var(--cor-superficie);
     border-bottom: 1px solid var(--cor-borda);
-    padding: 12px;
   }
-  .barra-lateral .rodape {
-    display: none;
+  .topo-movel .btn-icone {
+    color: var(--cor-texto);
   }
-  .marca {
-    padding: 4px 8px;
+  .marca-compacta {
+    padding: 0;
+  }
+  .marca-compacta .marca-icone {
+    width: 30px;
+    height: 30px;
+  }
+  .marca-compacta strong {
+    font-size: 1rem;
+  }
+  .barra-lateral {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: auto;
+    z-index: 45;
+    width: min(300px, 85vw);
+    box-shadow: var(--sombra-forte);
+    transform: translateX(-100%);
+    /* Fechado também sai da ordem de Tab (visibility), não só da tela. */
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .menu-aberto .barra-lateral {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+  .menu-fundo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(26, 26, 26, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .menu-aberto .menu-fundo {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .conteudo {
+    padding: 20px 16px 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.3rem;
+  }
+  .topo {
+    align-items: stretch;
+  }
+  .topo > .linha-acoes {
+    width: 100%;
+  }
+  .topo > .linha-acoes > .btn {
+    flex: 1;
+  }
+  /* Diálogos ocupam a largura toda e grudam embaixo: mais fácil de alcançar com o polegar. */
+  .modal-fundo {
+    padding: 16px 0 0;
+    align-items: flex-end;
+  }
+  .modal {
+    border-radius: var(--raio) var(--raio) 0 0;
+    padding: var(--esp-4);
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+  }
+  .modal-acoes > .btn {
+    flex: 1;
+  }
+  .toasts {
+    right: 16px;
+    bottom: 16px;
   }
 }

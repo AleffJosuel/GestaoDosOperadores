@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
 import { AvisoBox, ErroBox } from "../components/estados";
+import { useTituloPagina } from "../hooks/useTituloPagina";
 
 export function LoginPage() {
   const { entrar, motivoSaida } = useAuth();
@@ -11,6 +12,7 @@ export function LoginPage() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  useTituloPagina("Entrar");
 
   async function aoEnviar(e: FormEvent) {
     e.preventDefault();
