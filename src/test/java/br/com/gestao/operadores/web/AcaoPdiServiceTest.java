@@ -133,6 +133,35 @@ class AcaoPdiServiceTest {
     }
 
     @Test
+    void criar_paraColaboradorInativo_retornaConflito() {
+        colaborador.definirAtivo(false);
+        when(colaboradorService.buscar(COLABORADOR)).thenReturn(colaborador);
+
+        assertThatThrownBy(() -> service.criar(COLABORADOR, req(COMPETENCIA, AVALIACAO, null)))
+            .isInstanceOf(ResponseStatusException.class)
+            .satisfies(e -> assertThat(statusDe(e)).isEqualTo(HttpStatus.CONFLICT));
+
+        // Barra antes de qualquer outra validação, como na avaliação.
+        verify(competencias, never()).findByIdAndSupervisorId(any(), any());
+        verify(acoes, never()).save(any());
+    }
+
+    @Test
+    void atualizar_acaoDeColaboradorInativo_continuaPermitido() {
+        // Desativar não congela o histórico: a ação que já existe ainda pode ser corrigida.
+        AcaoPdi acao = new AcaoPdi(COLABORADOR, COMPETENCIA, AVALIACAO, "ação antiga",
+            null, null, null, null, StatusPdi.EM_ANDAMENTO, null, null, null);
+        colaborador.definirAtivo(false);
+        when(acoes.findById(1L)).thenReturn(Optional.of(acao));
+        when(colaboradorService.buscar(COLABORADOR)).thenReturn(colaborador);
+
+        service.atualizar(1L, req(COMPETENCIA, AVALIACAO, StatusPdi.CONCLUIDO));
+
+        assertThat(acao.getStatus()).isEqualTo(StatusPdi.CONCLUIDO);
+        assertThat(acao.getDataConclusao()).isNotNull();
+    }
+
+    @Test
     void buscar_inexistente_retorna404() {
         when(acoes.findById(1L)).thenReturn(Optional.empty());
 

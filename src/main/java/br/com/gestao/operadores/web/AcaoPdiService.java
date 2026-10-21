@@ -68,7 +68,13 @@ public class AcaoPdiService {
 
     @Transactional
     public AcaoPdi criar(Long colaboradorId, Dtos.PdiRequest r) {
-        colaboradorService.buscar(colaboradorId);
+        Colaborador c = colaboradorService.buscar(colaboradorId);
+        // Mesma regra da avaliação: quem saiu da equipe não recebe plano novo. Editar uma
+        // ação já existente continua permitido, para corrigir o histórico dele.
+        if (!c.isAtivo()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Não é possível criar ação de PDI para um colaborador inativo");
+        }
         if (r.competenciaId() == null || r.avaliacaoOrigemId() == null) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
                 "Informe a competência e a avaliação de origem");
