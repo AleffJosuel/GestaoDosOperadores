@@ -86,9 +86,9 @@ class PoliticaSenhaTest {
 
     @Test
     void ignoraParteLocalCurtaDoEmail() {
-        // Com "aj@gmail.com", exigir que a senha não contenha "aj" recusaria qualquer senha com
-        // essas duas letras seguidas — regra inútil que só geraria recusa inexplicável.
-        assertThat(PoliticaSenha.aceitavel("Trevo!Chuva#Pedra", "aj@gmail.com")).isTrue();
+        // Com "aj@exemplo.com", exigir que a senha não contenha "aj" recusaria qualquer senha
+        // com essas duas letras seguidas — regra inútil que só geraria recusa inexplicável.
+        assertThat(PoliticaSenha.aceitavel("Trevo!Chuva#Pedra", "aj@exemplo.com")).isTrue();
     }
 
     @Test
