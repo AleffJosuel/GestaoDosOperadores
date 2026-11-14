@@ -4,6 +4,7 @@ import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, ErroBox } from "../components/estados";
 import { DonutFaixas } from "../components/DonutFaixas";
 import { Icone, type NomeIcone } from "../components/Icone";
+import { BotaoExportar } from "../components/BotaoExportar";
 
 function fmt(media: number | null): string {
   return media == null ? "—" : media.toFixed(2).replace(".", ",");
@@ -25,6 +26,9 @@ export function DashboardPage() {
         <div>
           <h1>Dashboard</h1>
           <p>Visão geral da equipe a partir das avaliações mais recentes.</p>
+        </div>
+        <div className="linha-acoes">
+          <BotaoExportar exportar={api.exportarDashboard} oQue="os indicadores" />
         </div>
       </div>
 

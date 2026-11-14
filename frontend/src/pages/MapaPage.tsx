@@ -5,6 +5,7 @@ import { useRequisicao } from "../hooks/useRequisicao";
 import { Carregando, Clf, ErroBox, Vazio } from "../components/estados";
 import { CampoBusca } from "../components/CampoBusca";
 import { Icone } from "../components/Icone";
+import { BotaoExportar } from "../components/BotaoExportar";
 
 function fmt(media: number | null): string {
   return media == null ? "—" : media.toFixed(2).replace(".", ",");
@@ -56,6 +57,11 @@ export function MapaPage() {
           <h1>Mapa de competências</h1>
           <p>Nota mais recente de cada colaborador em cada competência.</p>
         </div>
+        {!semDados && (
+          <div className="linha-acoes">
+            <BotaoExportar exportar={api.exportarMapa} oQue="o mapa" />
+          </div>
+        )}
       </div>
 
       {semDados ? (
