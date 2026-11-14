@@ -168,8 +168,38 @@ foreach ($arquivo in $scripts) {
 # ------------------------------------------------------------------ 4. ZIP
 $zip = "$saida\$nome.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path $palco -DestinationPath $zip
+
+# As entradas são criadas uma a uma, com o caminho montado à mão, porque as duas formas
+# prontas gravam o separador errado no Windows PowerShell 5.1: tanto Compress-Archive quanto
+# ZipFile::CreateFromDirectory usam barra INVERTIDA, contrariando a especificação do ZIP.
+# No Windows passa despercebido; no Linux o unzip não reconhece aquilo como separador e cria
+# arquivos chamados "gestao-operadores-1.0.0\linux\iniciar.sh" soltos numa pasta só —
+# justamente para quem fosse usar a unit do systemd e o script .sh daqui.
+# Os dois: ZipFile e CreateEntryFromFile estão em .FileSystem; ZipArchive e ZipArchiveMode,
+# em System.IO.Compression. Carregar só o primeiro dá "TypeNotFound" no ZipArchiveMode.
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$arquivo = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    foreach ($item in Get-ChildItem $palco -Recurse -File) {
+        $relativo = $item.FullName.Substring($saida.Length + 1).Replace('\', '/')
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $arquivo, $item.FullName, $relativo, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+}
+finally {
+    $arquivo.Dispose()
+}
+
 Remove-Item $palco -Recurse -Force
+
+# Confere o que acabou de ser gravado: errar isto de novo só apareceria no servidor da empresa.
+$conferencia = [IO.Compression.ZipFile]::OpenRead($zip)
+$invertidas = @($conferencia.Entries | Where-Object { $_.FullName -match '\\' }).Count
+$conferencia.Dispose()
+if ($invertidas -gt 0) {
+    throw "$invertidas entradas do ZIP com barra invertida: não abriria corretamente no Linux."
+}
 
 $mb = [math]::Round((Get-Item $zip).Length / 1MB, 1)
 Write-Host ""
