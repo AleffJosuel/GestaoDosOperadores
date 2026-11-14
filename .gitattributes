@@ -1,6 +1,13 @@
 # Normaliza quebras de linha: o git guarda LF no repositório e ajusta ao checkout.
 * text=auto eol=lf
 
+# Scripts de implantação precisam da quebra de linha do sistema que os executa: o cmd.exe
+# erra em arquivos .bat com LF, e o shell não executa .sh com CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sh  text eol=lf
+
 # Arquivos tipicamente binários (não normalizar).
 *.png binary
 *.jpg binary

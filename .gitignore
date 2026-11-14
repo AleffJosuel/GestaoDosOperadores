@@ -1,6 +1,9 @@
 # Build (backend)
 target/
 
+# Pacote de entrega gerado pelo empacotar.ps1 (contém o JAR; é artefato, não fonte)
+dist-entrega/
+
 # Build / dependências (frontend)
 node_modules/
 dist/
