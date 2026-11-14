@@ -17,7 +17,12 @@ import type {
   TokenResponse,
 } from "./types";
 
-const BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").replace(/\/$/, "");
+/**
+ * Raiz da API. Vazio = mesma origem do site, que é o caso da instalação no servidor da empresa:
+ * o JAR serve a interface e a API na mesma porta, então `/api/...` já chega no lugar certo.
+ * No desenvolvimento o Vite roda em :5173 e o backend em :8080, e aí o `.env` aponta pra lá.
+ */
+const BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
 let token: string | null = null;
 let aoDeslogar: (() => void) | null = null;
@@ -130,6 +135,53 @@ async function upload<T>(caminho: string, arquivo: File): Promise<T> {
   return lerResposta<T>(resp);
 }
 
+/** Arquivo vindo da API, com o nome que o servidor escolheu. */
+export type ArquivoBaixado = { blob: Blob; nome: string };
+
+/**
+ * Baixa um arquivo gerado pela API.
+ *
+ * <p>Um `<a href>` apontando direto para o endpoint não serve: o navegador não manda o cabeçalho
+ * Authorization ao seguir um link, e a resposta seria 401. Por isso a requisição passa pelo fetch,
+ * como as outras, e o resultado vira um arquivo no disco pelo `salvarArquivo`.
+ */
+async function baixar(caminho: string): Promise<ArquivoBaixado> {
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${BASE}${caminho}`, { headers });
+  } catch {
+    throw new ApiError(0, "Não foi possível falar com o servidor. Ele está no ar?");
+  }
+
+  if (resp.status === 401) {
+    if (aoDeslogar) aoDeslogar();
+    throw new ApiError(401, "Sessão expirada. Entre novamente.");
+  }
+  if (!resp.ok) {
+    throw new ApiError(resp.status, mensagemPadrao(resp.status));
+  }
+  return { blob: await resp.blob(), nome: nomeDoArquivo(resp) };
+}
+
+/** Nome do arquivo vindo do Content-Disposition; o servidor é quem decide, inclusive a data. */
+function nomeDoArquivo(resp: Response): string {
+  const disposicao = resp.headers.get("Content-Disposition") ?? "";
+  // filename*=UTF-8'' vem primeiro de propósito: é a forma que preserva acento.
+  const comAcento = /filename\*=UTF-8''([^;]+)/i.exec(disposicao);
+  if (comAcento) {
+    try {
+      return decodeURIComponent(comAcento[1]);
+    } catch {
+      /* percentagem malformada: cai no formato simples abaixo */
+    }
+  }
+  const simples = /filename="?([^";]+)"?/i.exec(disposicao);
+  return simples ? simples[1] : "exportacao.csv";
+}
+
 export const api = {
   login: (email: string, senha: string) =>
     request<TokenResponse>("POST", "/api/sessao", { email, senha }),
@@ -148,6 +200,8 @@ export const api = {
     request<Colaborador>("POST", `/api/colaboradores/${id}/desativar`),
   reativarColaborador: (id: number) =>
     request<Colaborador>("POST", `/api/colaboradores/${id}/reativar`),
+  /** Exclusão definitiva (LGPD): apaga o colaborador e todo o histórico dele. Irreversível. */
+  excluirColaborador: (id: number) => request<void>("DELETE", `/api/colaboradores/${id}`),
 
   // Competências
   listarCompetencias: (incluirInativas = false) =>
@@ -191,6 +245,10 @@ export const api = {
   // Painel
   mapa: () => request<MapaResponse>("GET", "/api/mapa"),
   dashboard: () => request<DashboardResponse>("GET", "/api/dashboard"),
+
+  // Exportação em CSV (o servidor monta o arquivo e escolhe o nome)
+  exportarMapa: () => baixar("/api/mapa/exportar"),
+  exportarDashboard: () => baixar("/api/dashboard/exportar"),
 
   // Configuração (faixas + rótulos das notas)
   obterConfiguracao: () => request<Configuracao>("GET", "/api/configuracao"),

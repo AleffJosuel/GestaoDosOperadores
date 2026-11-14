@@ -7,7 +7,8 @@
  * endereço de exemplo ainda ali gera um site que carrega normalmente e falha só na
  * primeira chamada à API, com um erro de CSP no console que não aparece na tela.
  *
- * Só vale para build de produção: com API em localhost, não faz nada.
+ * Só vale para build publicado em outro domínio. Com API em localhost — ou na mesma origem do
+ * site, que é o caso do JAR instalado no servidor da empresa — não faz nada.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -16,8 +17,13 @@ import { fileURLToPath } from "node:url";
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LOCAIS = ["localhost", "127.0.0.1", "[::1]", "::1"];
 
+/**
+ * Procura VITE_API_URL na mesma ordem de precedência do Vite. Devolve `null` quando a variável
+ * não é declarada em lugar nenhum e `""` quando é declarada vazia — são casos diferentes: vazia
+ * é uma decisão (mesma origem), ausente é só falta de informação.
+ */
 function urlDaApi() {
-  if (process.env.VITE_API_URL) return process.env.VITE_API_URL.trim();
+  if (process.env.VITE_API_URL !== undefined) return process.env.VITE_API_URL.trim();
   for (const arquivo of [".env.production", ".env"]) {
     const caminho = join(raiz, arquivo);
     if (!existsSync(caminho)) continue;
@@ -35,6 +41,11 @@ function falhar(mensagem) {
 }
 
 const bruta = urlDaApi();
+if (bruta === "") {
+  // Build para o JAR: o front chama /api relativo, e a CSP do próprio backend libera 'self'.
+  console.log("[checar-vercel] API na mesma origem do site; conferência pulada.");
+  process.exit(0);
+}
 if (!bruta) {
   console.log("[checar-vercel] VITE_API_URL não definida; nada a conferir (build local).");
   process.exit(0);
