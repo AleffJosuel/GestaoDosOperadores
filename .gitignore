@@ -4,6 +4,16 @@ target/
 # Pacote de entrega gerado pelo empacotar.ps1 (contém o JAR; é artefato, não fonte)
 dist-entrega/
 
+# Material de implantação (config modelo, scripts de servidor, guia da TI).
+# Fora do versionamento por decisão: este repositório é público, e o guia descreve
+# a infraestrutura interna — portas, procedimento de firewall, como as contas são
+# criadas e o que o sistema ainda não protege.
+#
+# CONSEQUÊNCIA: um clone novo NÃO consegue gerar o pacote de entrega; o
+# empacotar.ps1 para e avisa. Os arquivos precisam ser obtidos com quem mantém o
+# projeto e ter backup fora do git.
+implantacao/
+
 # Build / dependências (frontend)
 node_modules/
 dist/

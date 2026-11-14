@@ -126,6 +126,19 @@ $palco = "$saida\$nome"
 if (Test-Path $palco) { Remove-Item $palco -Recurse -Force }
 New-Item -ItemType Directory -Path $palco -Force | Out-Null
 
+# implantacao/ fica FORA do git de propósito (ver .gitignore e README): num clone novo ela
+# não existe. Sem o aviso abaixo, o erro seria um Copy-Item reclamando de caminho — ou, pior,
+# um ZIP contendo só o JAR, sem configuração nem instruções, que só se descobre no servidor.
+if (-not (Test-Path "$raiz\implantacao\LEIA-ME.md")) {
+    Write-Host ""
+    Write-Host "[ERRO] A pasta implantacao\ não foi encontrada." -ForegroundColor Red
+    Write-Host "       Ela não está no repositório por decisão (o guia descreve a" -ForegroundColor Red
+    Write-Host "       infraestrutura interna e este repo é público). Peça os arquivos a" -ForegroundColor Red
+    Write-Host "       quem mantém o projeto e coloque-os em:" -ForegroundColor Red
+    Write-Host "         $raiz\implantacao\" -ForegroundColor Red
+    throw "implantacao/ ausente: o pacote sairia sem configuração nem instruções."
+}
+
 Copy-Item $jar "$palco\gestao-operadores.jar"
 Copy-Item "$raiz\implantacao\LEIA-ME.md" "$palco\LEIA-ME.md"
 foreach ($pasta in @("config", "banco", "windows", "linux", "https")) {
