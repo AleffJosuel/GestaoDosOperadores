@@ -75,6 +75,31 @@ export function ColaboradoresPage() {
     }
   }
 
+  /**
+   * Exclusão definitiva, para atender pedido de eliminação de dados (LGPD). Só aparece para
+   * colaborador já desativado: assim apagar é sempre um segundo passo deliberado, e não o clique
+   * vizinho ao de desativar.
+   */
+  async function excluir(c: Colaborador) {
+    const ok = await confirmar({
+      titulo: "Apagar definitivamente",
+      mensagem:
+        `Apagar ${c.nome} (matrícula ${c.matricula}) e todo o histórico: avaliações, ações de ` +
+        `PDI e acompanhamentos. Não há como desfazer, nem recuperar depois. ` +
+        `Para apenas tirar da lista, use Desativar.`,
+      confirmarTexto: "Apagar definitivamente",
+      perigo: true,
+    });
+    if (!ok) return;
+    try {
+      await api.excluirColaborador(c.id);
+      toast.sucesso("Colaborador e histórico apagados.");
+      lista.recarregar();
+    } catch (e) {
+      toast.erro(e instanceof ApiError ? e.message : "Erro ao apagar o colaborador.");
+    }
+  }
+
   return (
     <>
       <div className="topo">
@@ -214,6 +239,16 @@ export function ColaboradoresPage() {
                         >
                           {c.ativo ? "Desativar" : "Reativar"}
                         </button>
+                        {!c.ativo && (
+                          <button
+                            className="btn btn-sm btn-perigo"
+                            onClick={() => excluir(c)}
+                            aria-label={`Apagar definitivamente ${c.nome}`}
+                            title="Apaga o colaborador e todo o histórico (LGPD). Irreversível."
+                          >
+                            Apagar
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

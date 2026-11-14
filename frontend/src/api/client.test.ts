@@ -52,3 +52,27 @@ describe("cliente da API — tratamento de erro", () => {
     await expect(api.listarTodosPdi()).resolves.toEqual([{ id: 1 }]);
   });
 });
+
+describe("exclusão definitiva (LGPD)", () => {
+  it("chama DELETE no colaborador e aceita resposta sem corpo", async () => {
+    const fetchFalso = vi.fn(async (_url: string, _opcoes?: RequestInit) =>
+      new Response(null, { status: 204 })
+    );
+    vi.stubGlobal("fetch", fetchFalso);
+
+    await expect(api.excluirColaborador(7)).resolves.toBeUndefined();
+
+    const [url, opcoes] = fetchFalso.mock.calls[0];
+    expect(url).toMatch(/\/api\/colaboradores\/7$/);
+    // Não pode ser POST: um POST /desativar apenas inativa, e o pedido aqui é apagar.
+    expect(opcoes?.method).toBe("DELETE");
+  });
+
+  it("propaga a recusa do backend em vez de dar a exclusão como feita", async () => {
+    responder(404, JSON.stringify({ erro: "Colaborador não encontrado" }));
+
+    const e = await erroDe(api.excluirColaborador(99));
+
+    expect(e.status).toBe(404);
+  });
+});
