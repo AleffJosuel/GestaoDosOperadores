@@ -58,6 +58,32 @@
         testes: é o que permite ao SubidaDaAplicacaoTest conferir o site sendo servido de
         verdade, e não só a API.
       -->
+      <!--
+        Apaga o site anterior antes de copiar o novo. O copy-resources só sobrescreve, nunca
+        remove: como o Vite põe um hash no nome de cada arquivo, cada build deixava o bundle
+        antigo para trás e o JAR ia acumulando versões mortas da interface a cada entrega.
+
+        Roda em generate-resources, uma fase antes da cópia, para a ordem não depender da
+        ordem de declaração dos plugins dentro de uma mesma fase.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>limpar-site-anterior</id>
+            <phase>generate-resources</phase>
+            <goals><goal>clean</goal></goals>
+            <configuration>
+              <!-- Sem isto, limparia target/ inteiro no meio do build. -->
+              <excludeDefaultDirectories>true</excludeDefaultDirectories>
+              <filesets>
+                <fileset><directory>${project.build.outputDirectory}/static</directory></fileset>
+              </filesets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
